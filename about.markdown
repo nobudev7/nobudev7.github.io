@@ -1,18 +1,10 @@
 ---
 layout: page
-title: About
+title: About Me
 permalink: /about/
 ---
 
-This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at [jekyllrb.com](https://jekyllrb.com/)
+Hi, I'm a long time backend developer, mostly using Java. In my daily work, I work on Java web backend, always thinking high performance, reliable, and maintainable bode base for a large scale website. In my free time, I'm still thinking the same, but for my own projects - that require operations, UI, budgeting, security, etc. 
 
-You can find the source code for Minima at GitHub:
-[jekyll][jekyll-organization] /
-[minima](https://github.com/jekyll/minima)
+See my project in [my GitHub account](https://github.com/nobudev7).
 
-You can find the source code for Jekyll at GitHub:
-[jekyll][jekyll-organization] /
-[jekyll](https://github.com/jekyll/jekyll)
-
-
-[jekyll-organization]: https://github.com/jekyll
