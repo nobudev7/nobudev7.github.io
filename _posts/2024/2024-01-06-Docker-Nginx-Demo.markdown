@@ -1,6 +1,6 @@
-----
+---
 categories: docker nginx
-----
+---
 ## Start Nginx on Docker
 To run Nginx on Docker:
 ```
