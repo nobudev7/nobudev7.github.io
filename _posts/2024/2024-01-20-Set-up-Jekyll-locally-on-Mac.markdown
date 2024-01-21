@@ -68,7 +68,7 @@ Contrary to my expectation, Jekyll is not a simple web page template which the t
 
 The default theme _minima_ would work fine with the sample post created in above steps. However, as soon as I changed the theme, the whole site stopped working. Below is my memo in each step to solve the issue (not comprehensive).
 
-#### Layout
+### Layout
 Each post likely has a section called "Front Matter", which is a meta data for the post. One important value is the `layout`. The sample post specifies it as a `post`, like below.
 ```yml
 ---
@@ -99,7 +99,23 @@ The solution is to place those files under `_layouts` folder, _or_ change the `l
 
 What I see a problem of Jekyll is that, because the content file specifies the layout template, and each theme name layout file differently, it is harder to maintain the integrity, and quite frankly, it failed to be a good web framework as the markdown, or its front matter, is not portable between themes. However, Jekyll is the default action for GitHub Pages, and I'll adapt to it.
 
+**Update**
+I decided to go back to minima theme, however, from [Jekyll Repo](https://github.com/jekyll/minima/blob/master/README.md) to use version 3. See my commit at [https://github.com/nobudev7/nobudev7.github.io/commit/6ed9871c2d804077091aca325bad0d7a39f0a0aa](https://github.com/nobudev7/nobudev7.github.io/commit/6ed9871c2d804077091aca325bad0d7a39f0a0aa)
+
+### Syntax highlight
+The default minima or rouge syntax highlighting is not that attractive in color. I changed it to `thankful_eyes`. See other theme at [Rouge Theme Preview Page](https://spsarolkar.github.io/rouge-theme-preview/).
+To do so, you need to create a custom `scss` file for the theme (As noted, I'm already on Minima V3 at this point).
+```bash
+$ rougify style thankful_eyes > _sass/minima/custom-styles.scss 
+```
+This will generate the necessary override in syntax coloring, however, the background in `<code>` block is still pale pink. To change that, additional theming is required. Add the following to the `custom-styles.scss` file. Change the color to match with the background color of `.highlight` section that the `rougify` command generated.
+```css
+.highlighter-rouge .highlight,
+.highlighter-rouge .highlight code { background: #122b3b; }
+```
+
+
 #### References
-[Jekyll remote theme doesn't work locally](https://stackoverflow.com/questions/48728510/jekyll-remote-theme-doesnt-work-locally)
-[Using Jekyll for Website without Blog](https://stackoverflow.com/questions/30837079/using-jekyll-for-website-without-blog)
-[GitHub Pages](https://www.markdownguide.org/tools/github-pages/) List of Markdown element support
+- [Jekyll remote theme doesn't work locally](https://stackoverflow.com/questions/48728510/jekyll-remote-theme-doesnt-work-locally)
+- [Using Jekyll for Website without Blog](https://stackoverflow.com/questions/30837079/using-jekyll-for-website-without-blog)
+- [GitHub Pages](https://www.markdownguide.org/tools/github-pages/) List of Markdown element support

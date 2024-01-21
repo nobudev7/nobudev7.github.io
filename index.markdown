@@ -6,4 +6,4 @@ layout: home
 list_title: Diary Posts
 ---
 
-See my project in [my GitHub account](https://github.com/nobudev7).
+See my projects in [my GitHub account](https://github.com/nobudev7).

@@ -64,7 +64,7 @@ Warning: Permanently added 'sumpserver' (ED25519) to the list of known hosts.
       ~~._.   _/
          _/ _/
        _/m/'
-[ec2-user@ip-xx-xx-xx-xxx ~]$
+[ec2-user@ip-xx-xx-xx-xxx ~]
 ```
 * Set the time zone. Add below in `.bash_profile`
 ```bash 
@@ -355,9 +355,9 @@ No files found for sumpdata.service.
 Run 'systemctl edit --force --full sumpdata.service' to create a new unit.
 ```
 Running it as suggested, an editor (nano) shows up. This will become the service file.
-```properties
+```conf
 [Unit]
-Description=Samp Data service
+Description=Sump Data service
 After=syslog.target network.target
 
 [Service]
@@ -381,7 +381,7 @@ Note that, the above service file doesn't have any Environment values. That is t
 
 The same (nano) editor opens up, and between comment lines, add the env variables.
 
-```properties
+```conf
 ### Editing /etc/systemd/system/sumpdata.service.d/override.conf
 ### Anything between here and the comment below will become the new contents of the file
 
@@ -425,6 +425,11 @@ Make the service start automatically.
 $ systemctl enable sumpdata.service
 Created symlink /etc/systemd/system/multi-user.target.wants/sumpdata.service → /etc/systemd/system/sumpdata.service.
 ```
+After the service started, to see the jar output, use `journalctl`
+```bash
+$ sudo journalctl -u sumpdata.service
+```
+
 
 ### X. Install Streamlit and clone SumpChart
 
