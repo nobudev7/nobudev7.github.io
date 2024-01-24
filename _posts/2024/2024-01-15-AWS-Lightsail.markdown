@@ -20,7 +20,7 @@ Because this server is for a purpose of showcasing the Spring Boot application, 
 ## Setup Steps
 
 ### 1. Select Amazon Linux 2023 from the "Create Instance" page.
-I didn't choose Nginx instance because it's a Bitnami package with PHP, Memcache, and other frills I don't need. I chose 1GB RAM plan (the cheapest, $5/mo) to start with. Since it'll connect with just 1 Raspberry Pi and the Web UI will be basically only for 1 user (me), this should be sufficient.
+I didn't choose Nginx instance because it's a Bitnami package with PHP, Memcache, and other frills I don't need. I chose 1GB RAM plan ($5/mo) to start with. Since it'll connect with just 1 Raspberry Pi and the Web UI will be basically only for 1 user (me), this should be sufficient.
 
 Note: Below in screenshot, I started with 512MB instance. But I moved it to 1GB instance.
 
