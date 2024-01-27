@@ -114,7 +114,7 @@ nginx -s reload
 ### Adding Streamlit
 [Streamlit](https://streamlit.io) is a frontend web application to visualize data. For my project, I'm using it to draw a chart for the sump water level. 
 
-I originally just set up the same way as sump data API endpoint. Not that the port 8501 is the Streamlit app port (locally, it can be accessed http://localhost:8501).
+I originally just set up the same way as sump data API endpoint. Note that the port 8501 is the Streamlit app port (locally, it can be accessed http://localhost:8501).
 ```
     location / {
         proxy_pass http://host.docker.internal:8501/;

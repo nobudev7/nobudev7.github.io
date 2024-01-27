@@ -431,9 +431,189 @@ $ sudo journalctl -u sumpdata.service
 ```
 
 
-### X. Install Streamlit and clone SumpChart
+### 10. Install Streamlit and clone SumpChart
 
-Clone SumpChart
+To set up the Streamlit application, first, clone SumpChart repo.
 ```bash
 git clone https://github.com/ntamagawa/sumpchart.git
 ```
+
+The SumpChart app will be run under a Python environment, so let's create a virtual env for that.
+```bash
+python3 -m venv streamlitenv
+cd sumpchart/
+source ~/streamlitenv/bin/activate
+pip3 -V
+# Output
+pip 21.3.1 from /home/ec2-user/streamlitenv/lib64/python3.9/site-packages/pip (python 3.9)
+
+# Update pip
+python3 -m pip install --upgrade pip
+
+pip3 -V
+# Output - now pip is the latest version
+pip 23.3.2 from /home/ec2-user/streamlitenv/lib64/python3.9/site-packages/pip (python 3.9)
+
+```
+Using the pip3, install Streamlit and all dependencies per `requirements.txt` specifies.
+
+```bash
+pip3 install -r requirements.txt 
+```
+
+Run the application as a test.
+```bash
+$ streamlit run sumpchartapp.py 
+
+Collecting usage statistics. To deactivate, set browser.gatherUsageStats to False.
+
+
+  You can now view your Streamlit app in your browser.
+
+  Network URL: http://172.xx.xx.xx:8501 # AWS internal network
+  External URL: http://52.xx.xx.xx:8501 # External network
+
+```
+
+Note that, since the instance is an AWS server behind Lightsail default firewall, the port 8501 is not accessible at this point.
+
+For testing purpose, connect via SSH from another terminal, and check to see at least the streamlit app is running.
+
+```bash
+$ curl http://172.xx.xx.xx.xx:8501
+<!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/><link rel="shortcut icon" href="./favicon.png"/><link rel="preload" href="./static/media/SourceSansPro-Regular.0d69e5ff5e92ac64a0c9.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="./static/media/SourceSerifPro-SemiBold.5c1d378dd5990ef334ca.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="./static/media/SourceSansPro-Bold.118dea98980e20a81ced.woff2" as="font" type="font/woff2" crossorigin><title>Streamlit</title><script>window.prerenderReady=!1</script><script defer="defer" src="./static/js/main.3afeb7b0.js"></script><link href="./static/css/main.77d1c464.css" rel="stylesheet"></head><body><noscript>You need to enable JavaScript to run this app.</noscript><div id="root"></div></body></html>
+```
+
+To make streamlit app running as a service, put necessary commands in a script.
+
+sumpchart.sh
+```bash
+#!/bin/bash
+
+cd /home/ec2-user/sumpchart
+source /home/ec2-user/streamlitenv/bin/activate
+echo "venv=$VIRTUAL_ENV"
+streamlit run sumpchartapp.py
+
+```
+
+Make the script executable.
+```bash
+chmod +x sumpchart.sh
+```
+
+### 11. Configure SumpChart app to run as a system service
+Like running the Jar app as a service, let's set up the SumpChart Streamlit app to run as a service.
+
+```bash
+sudo su
+
+```
+
+```conf
+[Unit]
+Description=Sump Chart service
+After=syslog.target network.target
+
+[Service]
+User=ec2-user
+Group=ec2-user
+
+Type=simple
+
+WorkingDirectory=/home/ec2-user
+ExecStart=/home/ec2-user/sumpchart.sh
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Reload systemd, start, check status of the new service.
+```bash
+systemctl daemon-reload
+systemctl start sumpchart.service
+systemctl status sumpchart.service
+# Output
+● sumpchart.service - Sump Chart service
+     Loaded: loaded (/etc/systemd/system/sumpchart.service; disabled; preset: disabled)
+     Active: activating (start) since Sat 2024-01-27 11:20:13 EST; 48s ago
+Cntrl PID: 412050 (sumpchart.sh)
+      Tasks: 6 (limit: 1061)
+     Memory: 69.6M
+        CPU: 1.021s
+     CGroup: /system.slice/sumpchart.service
+             ├─412050 /bin/bash /home/ec2-user/sumpchart.sh
+             └─412051 /home/ec2-user/streamlitenv/bin/python3 /home/ec2-user/streamlitenv/bin/streamlit run sumpchartapp.py
+
+Jan 27 11:20:13 ip-172-xx-xx-xx.ec2.internal systemd[1]: Starting sumpchart.service - Sump Chart service...
+Jan 27 11:20:13 ip-172-xx-xx-xx.ec2.internal sumpchart.sh[412050]: venv=/home/ec2-user/streamlitenv
+Jan 27 11:20:14 ip-172-xx-xx-xx.ec2.internal sumpchart.sh[412051]: Collecting usage statistics. To deactivate, set browser.gatherUsageStats to False.
+Jan 27 11:20:14 ip-172-xx-xx-xx.ec2.internal sumpchart.sh[412051]:   You can now view your Streamlit app in your browser.
+Jan 27 11:20:14 ip-172-xx-xx-xx.ec2.internal sumpchart.sh[412051]:   Network URL: http://172.xx.xx.xx:8501
+Jan 27 11:20:14 ip-172-xx-xx-xx.ec2.internal sumpchart.sh[412051]:   External URL: http://52.xx.xx.xx:8501
+
+```
+Make the service start automatically.
+```bash
+systemctl enable sumpchart.service
+# Output
+Created symlink /etc/systemd/system/multi-user.target.wants/sumpchart.service → /etc/systemd/system/sumpchart.service.
+```
+
+### 12. Configure Nginx to access applications
+Now that there are 2 applications that interact with users and devices are running, they need to be allowed to access through Nginx server.
+* Streamlit for visualization that is the root of the subdomain, i.e. `sumpdata.nobudev7.com/`
+* Java server application as a `sumpdata` service on `/devices` endpoint
+* Along with the Java server, Swagger uses 2 endpoints, `/swagger-ui` and `/v3`.
+
+In configuring those endpoints, I want `/devices` endpoint, which is the REST API endpoint, to have limited access from my own devices. The easiest way is to limit the IP address(es) that can access to the endpoint.
+
+/etc/nginx/conf.d/sumpdata.conf
+```conf
+server {
+    server_name  sumpdata.nobudev7.com;
+
+    # Streamlit
+    location / {
+	proxy_pass http://localhost:8501;
+	proxy_redirect off;
+    }
+
+    # Streamlit WebSocket folder
+    location /_stcore {
+        proxy_pass http://localhost:8501/_stcore;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header Host $host;
+    }
+
+    # Swagger is accessed via /swagger url. 
+    location /swagger {
+        proxy_pass http://localhost:8080/swagger-ui;
+        index index.html;
+        proxy_redirect off;
+    }
+    
+    # This is also for Swagger that requires /v3/... url
+    location /v3 {
+        proxy_pass http://localhost:8080/v3;
+    	proxy_redirect off;
+    }
+
+    # This is the sump data endpoint.
+    location /devices {
+        proxy_pass http://localhost:8080/devices;
+	    proxy_redirect off;
+        allow 123.xxx.xxx.xxx; # This is where the device resides
+        deny all;
+
+    }
+```
+Test the config, reload, and Nginx should be routing all endpoints correctly.
+```bash
+nginx -t
+nginx -s reload
+```
+
