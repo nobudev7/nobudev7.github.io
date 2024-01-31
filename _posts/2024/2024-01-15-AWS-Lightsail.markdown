@@ -24,7 +24,7 @@ I didn't choose Nginx instance because it's a Bitnami package with PHP, Memcache
 
 Note: Below in screenshot, I started with 512MB instance. But I moved it to 1GB instance.
 
-![Lightsail Instance Selection](/images/2024-01-15/Lightsail-Instance.avif) 
+![Lightsail Instance Selection](/images/2024-01-15/Lightsail-Instance.avif)
 
 
 ![Instance Plan Selection](/images/2024-01-15/Lightwail-Plans.png)
