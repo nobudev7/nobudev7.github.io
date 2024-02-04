@@ -23,7 +23,7 @@ author:
   name: Nobu
 #  email: your-email@example.com
 description: >- # this means to ignore newlines until "baseurl:"
-  In my daily work, I work on Java web backend, always thinking high performance, reliable, and maintainable bode base.
+  In my daily work, I work on Java web backend development, focusing on creating high-performance, reliable, and maintainable code.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
 
