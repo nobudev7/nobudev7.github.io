@@ -22,25 +22,17 @@ This needs a proper IAM setting for API access and permission. (To be documented
 #### Lambda Function
 I'll set up a Lambda function that is triggered by the new data on S3. It'll be a process that takes the new data, and update the water level chart for the day. I might set this up such a way that it runs every time the new data is uploaded (= every minute), or perhaps only every 10 minutes, depending on the processing time and cost of Lambda.
 
-### Website
-[The current website](https://sumpdata.nobudev7.com/) is hosted on a Nginx server with Streamlit as a frontend visualization. The plan is to replace it with static S3 based website. The above Lambda Function creates charts, and static HTML and CSS will be placed in a same folder that is exposed as a website. A small JavaScript code will get the most up-to-date list of charts, and show the year and month as the table of contents on the web page. It will look similar to the current website, however, everything will be statistically saved on S3, so where will be no server to maintain.
-
----
-## Journal of work
-
-### Creating Charting Java application
-As the first step, I created a Java application that takes CSV files, and output a chart per day to indicate the water level.
+#### Charting Java application
+As the basis of the lambda function, I created a simple CLI Java application that takes CSV files, and output a chart per day to indicate the water level.
 Using [Gemini](https://aistudio.google.com/vibe-code) as the AI tool, I vibe-coded a project that does that using [JFree Chart](https://www.jfree.org/jfreechart/).
 
 The result is [Sump Data Visualizer Cli](https://github.com/nobudev7/SumpDataVisualizerCli), a Java command line tool that takes 
 
 ![Sump Data Visualizer](/images/2026-02-14/SumpDataVisulalizer.png)
 
-### Upload Website to S3
-To check if the output of the above Java application work on S3 website, I manually uploaded the entire output folder. Enabled "Static website hosting" for the folder, I can see it working as a website, but under amazonaws.com domain, and without HTTPS support.
 
-[Unsecure Sump Water Level website](
-http://sump-water-level.s3-website-us-east-1.amazonaws.com/)
+### Website
+[The current website](https://sumpdata.nobudev7.com/) is hosted on a Nginx server with Streamlit as a frontend visualization. ~~The plan is to replace it with static S3 based website.~~ The website is structured using Cloud Front and private S3 storage now, as described in [Securing Serverless Site - Migrating From S3 Hosting To Amazon Cloudfront Https](https://www.nobudev7.com/aws/2026/05/02/Securing-Serverless-Site-Migrating-from-S3-Hosting-to-Amazon-CloudFront-HTTPS.html) The above Lambda Function creates charts, and static HTML and CSS will be placed in a same folder that is exposed as a website. A small JavaScript code will get the most up-to-date list of charts, and show the year and month as the table of contents on the web page. It will look similar to the current website, however, everything will be statistically saved on S3, so where will be no server to maintain.
 
 
 
