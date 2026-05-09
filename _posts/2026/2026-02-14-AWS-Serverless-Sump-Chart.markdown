@@ -13,11 +13,16 @@ Key AWS Capability:
 ### The plan
 (To be updated as necessary)
 
-#### IoT --> S3
-The current [Sump Data](https://github.com/nobudev7/sumpdata) system used a RaspberryPi as a monitoring device, and sends the current water level every minutes to a server. On top, it sends 1 day worth of data to the same server in case there was any missing data points.
-I will replace this with either IoT --> S3 directly. However, I might create a small Lambda Function if I find some processing necessary.
-This needs a proper IAM setting for API access and permission. (To be documented later)
 
+#### ~~IoT --> S3~~
+Below, I changed my plan. The original idea was simply put the same CSV file as stored in RaspberryPi to S3. However, after researching and thinking through the system, decided to use DynamoDB instead. 
+<details>
+<summary>Click to see original idea</summary>
+Implementing a system that sends small data every minute and store it in a CSV file sounds inefficient as a long term solution.
+> The current [Sump Data](https://github.com/nobudev7/sumpdata) system used a RaspberryPi as a monitoring device, and sends the current water level every minutes to a server. On top, it sends 1 day worth of data to the same server in case there was any missing data points.
+> I will replace this with either IoT --> S3 directly. However, I might create a small Lambda Function if I find some processing necessary.
+> This needs a proper IAM setting for API access and permission. (To be documented later)
+</details>
 
 #### Lambda Function
 I'll set up a Lambda function that is triggered by the new data on S3. It'll be a process that takes the new data, and update the water level chart for the day. I might set this up such a way that it runs every time the new data is uploaded (= every minute), or perhaps only every 10 minutes, depending on the processing time and cost of Lambda.
