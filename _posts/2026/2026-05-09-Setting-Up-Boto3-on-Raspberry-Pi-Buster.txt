@@ -1,0 +1,65 @@
+---
+layout: post
+categories: aws Raspi
+---
+
+Note: This is not something I pursued. I installed pyenv, but ended up just using Python 3.7 - default version of RaspberryPi Buster. The reason is 1. Having multiple version of python is potentially cumbersome to maintain, 2. because of the 32-bit cpu architecture (`armv6l`), some latest tools may not be supported. This is not strictly necessary, but some Google output shows awscli is necessary (although, that's may not be true), so I wanted to stay away.
+
+### System
+Raspberry Pi Zero 2 W
+Raspi OS : Buster
+
+
+
+
+### apt update
+
+Raspberry Pi OS Buster (Debian 10) reached its End of Life (EOL) in June 2024. To make `apt update` work, I had to make point the system to the new "legacy" url.
+
+1. Update your Raspbian sources
+Open the main sources file. `sudo vi /etc/apt/sources.list`
+Find the line starting with deb http://raspberrypi.org buster...
+Change it to: `deb https://legacy.raspbian.org/raspbian/ buster main contrib non-free rpi`
+Save the change
+
+2. Update your Raspberry Pi specific sources <== Didn't need as it's already like that
+Open the Raspberry Pi list: `sudo vi /etc/apt/sources.list.d/raspi.list`
+Ensure the line looks like this: deb http://archive.raspberrypi.org/debian/ buster main
+
+```shell
+sudo apt clean
+sudo apt update --allow-releaseinfo-change
+```
+
+
+### Install penv
+
+#### Install BUild dependencies
+
+```shell
+sudo apt install -y make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev libgdbm-dev lzma lzma-dev tcl-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev git
+```
+This took about 10 minutes.
+
+```
+curl https://pyenv.run | bash
+```
+
+Add blow to `~/.bashrc` (in my Pi system, there's no `~/.bash_profiler`)
+
+```
+# Load pyenv automatically by appending
+export PYENV_ROOT="$HOME/.pyenv"
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init - bash)"
+# Load pyenv-virtualenv automatically
+eval "$(pyenv virtualenv-init -)"
+```
+Then, restart your shell.
+
+#### 
+
+Install Python 3.10
+
+
+

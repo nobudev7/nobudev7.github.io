@@ -13,6 +13,18 @@ Key AWS Capability:
 ### The plan
 (To be updated as necessary)
 
+#### IoT --> DynamoDB
+
+RaspberryPi python/shell script --> DynamoDB.
+RaspberryPi Sump pump python code generates data point every minute and add it to a CSV file. I don't want to change the python code as it's an OSS software and want to keep it as original. So, I'd like to create code that reads the CSV file and upload to DynamoDB.
+- [ ] Python or shell, or [low level API](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Programming.LowLevelAPI.html)
+    - [x] Set up DynamoDB
+    - [ ] Set up API Gateway
+    - [ ] Sample curl command
+    - [ ] Shell script to take the last line of CSV, and upload using curl
+    - [ ] Run the script every minute
+- [ ] Directly write to DynamoDB or let Lambda Function to handle with some filtering (e.g. anomaly data points).
+- [ ] DynamoDB fields (attributes) - Timestamp, waterlevel e.g. 00:05:06,10.8 (date is from CSV file name)
 
 #### ~~IoT --> S3~~
 Below, I changed my plan. The original idea was simply put the same CSV file as stored in RaspberryPi to S3. However, after researching and thinking through the system, decided to use DynamoDB instead. 
