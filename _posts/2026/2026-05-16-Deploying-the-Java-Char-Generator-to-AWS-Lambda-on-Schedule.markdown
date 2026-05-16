@@ -7,7 +7,7 @@ This blog post provides a minimal, step-by-step procedure for deploying the [Cha
 
 Every 5 minutes is enough to generate up-to-date chart, although data points are uploaded every minute. If AWS cost is not a question, it can be every minute, or the lambda function can be run by each data point upload to DynamoDB.
 
-The system design idea is described in my previous post - [Migrating To Serverless: Raspberry Pi To Dynamodb Plus Lambda Function For Chart Generation](https://github.com/nobudev7/ChartGeneratorLambdaFunction)
+The system design idea is described in my previous post - [Migrating To Serverless: Raspberry Pi To Dynamodb Plus Lambda Function For Chart Generation](https://www.nobudev7.com/aws/raspi/2026/05/12/Migrating-to-Serverless-Raspberry-Pi-to-DynamoDB-plus-Lambda-Function-for-Chart-Generation.html)
 
 ### 1. Build the Deployment Package
 Compile the "fat JAR" containing all dependencies:
