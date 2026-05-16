@@ -16,6 +16,8 @@ The goal was simple - generate water level charts automatically continuously. Th
 
 The core of the system is a Lambda function written in **Java 21**. It utilizes the `JFreeChart` library to handle chart generation. Because AWS Lambda has limited filesystem access and is designed for stateless execution, the code is optimized for in-memory processing:
 
+See the code in this GitHub repo - [ChartGeneratorLambdaFunction](https://github.com/nobudev7/ChartGeneratorLambdaFunction).
+
 1.  **Data Retrieval**: The function queries DynamoDB for a specific date's data points.
 2.  **In-Memory Generation**: Instead of writing to a temporary file, the chart is generated and stored in memory as a `byte[]`.
 3.  **S3 Stream**: The byte array is then uploaded directly to an S3 bucket with the appropriate `Cache-Control` headers.
