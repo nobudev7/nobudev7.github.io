@@ -38,7 +38,13 @@ AWS suggests to use S3 for files larger than 10MB. Because the Chart Generator J
     -   Paste the **S3 URI** you copied.
     -   In **Runtime settings**, click **Edit** and set the **Handler** to:
         `com.nobudev7.ChartGeneratorHandler::handleRequest`
-
+3. **Configure Timezone**
+    The current set up is assuming that the data point is using local time zone for the data point. To make the JAR runs on the same time zone as RaspberryPi (although, this is a Sump Pump application constraint), set the Java time zone for the lambda function.
+    -  Open **Configuration** tab.
+    -  Navigate to **Environment variables** from the left panel.
+    -  Click **Edit** to add an environment variable.
+    -  Set **JAVA_TOOL_OPTIONS** for Key, and set `-Duser.timezone=<TIME_ZONE_STRING>` for the value. For example, `-Duser.timezone=America/New_York`.
+    -  Click **Save**.
 
 ### 4. Configure IAM Permissions
 The Lambda function must be authorized to read from DynamoDB and write to S3. Follow these steps to attach the necessary permissions:
