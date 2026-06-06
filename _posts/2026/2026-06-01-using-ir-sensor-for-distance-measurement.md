@@ -139,3 +139,9 @@ Distance: 326 mm (32.6 cm)
 ^C
 Measurement stopped by user.
 ```
+
+## Update
+While the VL53L0X provides more accurate measurements in a clear path, it ultimately proved unsuitable for my sump water level application. I had hoped its narrower beam would avoid internal obstacles, but it still picked up reflections from the water pump rather than the water surface.
+
+I have since returned to using an ultrasonic sensor, but this time with a "stilling well" to stabilize and isolate the readings. An IR sensor would likely work with a stilling well as well; I chose the ultrasonic sensor simply because I happened to have a new Pi and sensor already set up in a nice enclosure. See [my later post](https://www.nobudev7.com/) for more details.
+
