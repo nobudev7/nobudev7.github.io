@@ -12,6 +12,8 @@ Recently, however, these errors have become more frequent. The sensor often repo
 ## The Sensor: VL53L0X
 I chose VL53L0X. It is a Time-of-Flight (ToF) laser-ranging sensor that measures distance by timing how long light takes to bounce off an object. Unlike standard IR sensors that rely on reflected light intensity, this method is less affected by a target's color or reflectance.
 
+![VL53L0X](/images/2026-06-01/VL53L0X.jpeg)
+
 ## Connecting to Pi
 Wiring the VL53L0X to a Raspberry Pi Zero W is straightforward as it uses the I2C interface. Connect the four main pins on the sensor to the corresponding pins on the Pi's GPIO header:
 
@@ -25,6 +27,9 @@ Wiring the VL53L0X to a Raspberry Pi Zero W is straightforward as it uses the I2
 
 Ensure your connections are secure before powering on the Pi.
  If your sensor breakout board has additional pins like `XSHUT` or `GPIO1`, you can leave them disconnected for a basic setup.
+
+![VL53L0X](/images/2026-06-01/PiZeroW.jpeg)
+
 ## Enable I2C on Your Raspberry Pi
 Since the VL53L0X communicates via the I2C protocol, you must enable I2C in the system configuration.
 
