@@ -54,8 +54,8 @@ github: [metadata]
 # theme: minima
 # plugins:
 #  - jekyll-feed
-# remote_theme: jekyll/minima
-remote_theme: pages-themes/minimal
+remote_theme: jekyll/minima
+
 plugins:
 - jekyll-remote-theme # add this line to the plugins list if you already have one
 
