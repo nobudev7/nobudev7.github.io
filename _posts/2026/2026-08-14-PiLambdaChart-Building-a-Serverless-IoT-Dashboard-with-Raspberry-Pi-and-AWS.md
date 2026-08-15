@@ -117,7 +117,7 @@ The interactive features include:
 
 The entire AWS stack is defined in Terraform with feature flags for incremental deployment:
 
-```hcl
+```properties
 enable_lambda           = true
 enable_cloudfront       = true
 enable_metadata_seeding = true
@@ -127,7 +127,7 @@ This means you can deploy DynamoDB tables first, start collecting data, then add
 
 Device and metric definitions live in `terraform.tfvars` (which is gitignored), keeping personal device names and locations out of the repository:
 
-```hcl
+```javascript
 seeded_devices = {
   "1" = { name = "Sump Pump Monitor", location = "Basement" }
   "2" = { name = "Ambient Monitor",   location = "Bedroom" }
