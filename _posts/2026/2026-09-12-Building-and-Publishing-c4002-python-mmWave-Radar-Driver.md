@@ -30,7 +30,7 @@ Recently, I integrated the **DFRobot C4002 (SEN0691)** mmWave sensor into my Ras
 
 I decided to build **`c4002-python`** from the ground up, test it thoroughly on actual hardware, and publish it as an open-source package on [PyPI](https://pypi.org/project/c4002-python/) and [GitHub](https://github.com/nobudev7/c4002-python).
 
-![DFRobot C4002 mmWave Sensor](../../images/2026-09-12/c4002-sensor.jpg)
+![DFRobot C4002 mmWave Sensor](/images/2026-09-12/c4002-sensor.jpg)
 
 ---
 
