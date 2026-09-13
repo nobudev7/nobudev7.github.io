@@ -12,6 +12,7 @@ categories: python Raspi
 
 ---
 ## Technologies used
+
 | Component | Technology | Role |
 |:---|:---|:---|
 | Hardware | Raspberry Pi | Host controller & UART interface |
