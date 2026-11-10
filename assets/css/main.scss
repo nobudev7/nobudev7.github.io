@@ -1,13 +1,14 @@
 ---
 # Only the main Sass file needs front matter (the dashes are enough)
 ---
+
 @charset "utf-8";
 
 @use "sass:math";
 @use "sass:string";
 
 @use "variables" with (
-  $max-content-width: {{ site.max_width | default: "930px" }}
+  $max-content-width: {{site.max_width | default: "930px"}}
 );
 
 @use "themes";
@@ -47,7 +48,9 @@ html[data-theme="dark"] {
 a {
   color: var(--global-theme-color);
   text-decoration-color: rgba(0, 102, 204, 0.3);
-  transition: color 0.15s ease-in-out, text-decoration-color 0.15s ease-in-out;
+  transition:
+    color 0.15s ease-in-out,
+    text-decoration-color 0.15s ease-in-out;
 
   &:hover {
     color: var(--global-hover-color);
@@ -103,41 +106,111 @@ pre.highlight code,
   color: #faf6e4;
 }
 
-.highlight table td { padding: 5px; }
-.highlight table pre { margin: 0; }
+.highlight table td {
+  padding: 5px;
+}
+.highlight table pre {
+  margin: 0;
+}
 
-.highlight .gl { color: #dee5e7; background-color: #4e5d62; }
-.highlight .gp { color: #a8e1fe; font-weight: bold; }
-.highlight .c, .highlight .ch, .highlight .cd, .highlight .cm, .highlight .cpf, .highlight .c1, .highlight .cs {
+.highlight .gl {
+  color: #dee5e7;
+  background-color: #4e5d62;
+}
+.highlight .gp {
+  color: #a8e1fe;
+  font-weight: bold;
+}
+.highlight .c,
+.highlight .ch,
+.highlight .cd,
+.highlight .cm,
+.highlight .cpf,
+.highlight .c1,
+.highlight .cs {
   color: #6c8b9f;
   font-style: italic;
 }
-.highlight .cp { color: #b2fd6d; font-weight: bold; }
-.highlight .err { color: inherit; background-color: transparent !important; }
-.highlight .gr { color: #cc0000; font-weight: bold; font-style: italic; }
-
-/* Keywords */
-.highlight .k, .highlight .kd, .highlight .kv { color: #f6dd62; font-weight: bold; }
-
-/* Operators & Punctuation - electric cyan */
-.highlight .o, .highlight .ow { color: #4df4ff !important; font-weight: bold; }
-.highlight .p, .highlight .pi { color: #4df4ff !important; }
-
-.highlight .gd { color: #cc0000; }
-.highlight .gi { color: #b2fd6d; }
-.highlight .ge { font-style: italic; }
-.highlight .gs { font-weight: bold; }
-.highlight .gt { color: #dee5e7; background-color: #4e5d62; }
-
-/* Types, Classes, Namespaces */
-.highlight .kc { color: #f696db; font-weight: bold; }
-.highlight .kn, .highlight .kp, .highlight .kr { color: #ffb000; font-weight: bold; }
-.highlight .gh, .highlight .gu { color: #ffb000; font-weight: bold; }
-.highlight .kt, .highlight .no, .highlight .nc, .highlight .nd, .highlight .nn, .highlight .bp, .highlight .ne {
+.highlight .cp {
   color: #b2fd6d;
   font-weight: bold;
 }
-.highlight .nl { color: #ffb000; font-weight: bold; }
+.highlight .err {
+  color: inherit;
+  background-color: transparent !important;
+}
+.highlight .gr {
+  color: #cc0000;
+  font-weight: bold;
+  font-style: italic;
+}
+
+/* Keywords */
+.highlight .k,
+.highlight .kd,
+.highlight .kv {
+  color: #f6dd62;
+  font-weight: bold;
+}
+
+/* Operators & Punctuation - electric cyan */
+.highlight .o,
+.highlight .ow {
+  color: #4df4ff !important;
+  font-weight: bold;
+}
+.highlight .p,
+.highlight .pi {
+  color: #4df4ff !important;
+}
+
+.highlight .gd {
+  color: #cc0000;
+}
+.highlight .gi {
+  color: #b2fd6d;
+}
+.highlight .ge {
+  font-style: italic;
+}
+.highlight .gs {
+  font-weight: bold;
+}
+.highlight .gt {
+  color: #dee5e7;
+  background-color: #4e5d62;
+}
+
+/* Types, Classes, Namespaces */
+.highlight .kc {
+  color: #f696db;
+  font-weight: bold;
+}
+.highlight .kn,
+.highlight .kp,
+.highlight .kr {
+  color: #ffb000;
+  font-weight: bold;
+}
+.highlight .gh,
+.highlight .gu {
+  color: #ffb000;
+  font-weight: bold;
+}
+.highlight .kt,
+.highlight .no,
+.highlight .nc,
+.highlight .nd,
+.highlight .nn,
+.highlight .bp,
+.highlight .ne {
+  color: #b2fd6d;
+  font-weight: bold;
+}
+.highlight .nl {
+  color: #ffb000;
+  font-weight: bold;
+}
 
 /* Name.Tag (nt) - vibrant warm amber/gold */
 .highlight .nt {
@@ -146,18 +219,43 @@ pre.highlight code,
 }
 
 /* Numbers & Booleans */
-.highlight .m, .highlight .mb, .highlight .mf, .highlight .mh, .highlight .mi, .highlight .il, .highlight .mo, .highlight .mx, .highlight .ld, .highlight .ss {
+.highlight .m,
+.highlight .mb,
+.highlight .mf,
+.highlight .mh,
+.highlight .mi,
+.highlight .il,
+.highlight .mo,
+.highlight .mx,
+.highlight .ld,
+.highlight .ss {
   color: #f696db;
   font-weight: bold;
 }
 
 /* Strings */
-.highlight .s, .highlight .sb, .highlight .dl, .highlight .sd, .highlight .s2, .highlight .sh, .highlight .sx, .highlight .sr, .highlight .s1 {
+.highlight .s,
+.highlight .sb,
+.highlight .dl,
+.highlight .sd,
+.highlight .s2,
+.highlight .sh,
+.highlight .sx,
+.highlight .sr,
+.highlight .s1 {
   color: #fff0a6;
   font-weight: bold;
 }
-.highlight .sa { color: #f6dd62; font-weight: bold; }
-.highlight .se, .highlight .sc, .highlight .si { color: #4df4ff; font-weight: bold; }
+.highlight .sa {
+  color: #f6dd62;
+  font-weight: bold;
+}
+.highlight .se,
+.highlight .sc,
+.highlight .si {
+  color: #4df4ff;
+  font-weight: bold;
+}
 
 /* Base text & tokens inside code blocks to prevent inheriting page black */
 .highlight,
@@ -168,10 +266,24 @@ pre.highlight code,
 }
 
 /* Builtins, Functions, Attributes, and Variables */
-.highlight .nb, .highlight .bp { color: #4df4ff !important; }
-.highlight .nf, .highlight .fm, .highlight .py { color: #a8e1fe !important; }
-.highlight .na { color: #bed6ff !important; }
-.highlight .nv, .highlight .vc, .highlight .vg, .highlight .vi, .highlight .vm, .highlight .n {
+.highlight .nb,
+.highlight .bp {
+  color: #4df4ff !important;
+}
+.highlight .nf,
+.highlight .fm,
+.highlight .py {
+  color: #a8e1fe !important;
+}
+.highlight .na {
+  color: #bed6ff !important;
+}
+.highlight .nv,
+.highlight .vc,
+.highlight .vg,
+.highlight .vi,
+.highlight .vm,
+.highlight .n {
   color: #a8e1fe !important;
   font-weight: bold;
 }
