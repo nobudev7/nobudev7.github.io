@@ -3,6 +3,7 @@ layout: post
 title:  "Set up Jekyll Locally on Mac"
 date:   2024-01-20 21:35:35 -0500
 categories: github
+tags: [jekyll, mac]
 ---
 As I leave DEV.to due to its bug, I decided to move to GitHub Pages with Jekyll. There are a few pages that explains how to do it, however, all of them fall short for me. On this post, I'll show what I have done for local Mac installation.
 

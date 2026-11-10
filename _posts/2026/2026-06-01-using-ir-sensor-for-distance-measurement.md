@@ -2,6 +2,7 @@
 layout: post
 title: "Using an IR Sensor for Precise Distance Measurement on Raspberry Pi"
 categories: aws Raspi
+tags: [raspberry-pi, sensors]
 ---
 
 ## Background

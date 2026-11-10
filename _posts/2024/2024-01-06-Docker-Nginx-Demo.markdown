@@ -1,5 +1,6 @@
 ---
 categories: docker nginx
+tags: [docker, nginx]
 ---
 ## Start Nginx on Docker
 To run Nginx on Docker:

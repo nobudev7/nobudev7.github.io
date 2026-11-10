@@ -1,5 +1,6 @@
 ---
 categories: docker
+tags: [docker, mysql]
 ---
 
 ## Goal

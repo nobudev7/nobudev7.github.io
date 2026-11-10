@@ -2,6 +2,7 @@
 layout: post
 title: "Building and Publishing c4002-python: A 24GHz mmWave Radar Driver for Raspberry Pi"
 categories: python Raspi
+tags: [python, raspberry-pi, open-source]
 ---
 
 ## Open Source Links

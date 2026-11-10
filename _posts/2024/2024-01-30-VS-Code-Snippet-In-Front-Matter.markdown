@@ -1,6 +1,7 @@
 ---
 layout: post
 categories: VSCode
+tags: [vscode, markdown]
 ---
 
 I just wanted to run a user snippet on VS Code when writing a post (like this one!) in front matter, so that I can insert the current time easily. The goal is something like below.

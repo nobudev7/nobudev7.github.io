@@ -2,6 +2,7 @@
 layout: post
 title: "Exploring Multi-Cloud Deployments: Migrating from AWS Lightsail to Oracle Cloud (OCI)"
 categories: cloud devops aws
+tags: [aws, cloud, devops]
 ---
 
 ## Motivation: Beyond Single-Vendor Lock-In
@@ -72,7 +73,7 @@ flowchart TD
         BackupScript --> DB
     end
 
-    subgraph "Amazon Web Services (Disaster Recovery Storage)"
+    subgraph "Amazon Web Services<br/>(Disaster Recovery Storage)"
         BackupScript -.->|AWS CLI S3 Sync| S3Bucket["Private Encrypted S3 Bucket"]
     end
 ```

@@ -3,6 +3,7 @@ layout: post
 title:  "AWS Lightsail Java Server Setup Memo"
 date:   2024-01-15 21:35:35 -0500
 categories: github
+tags: [aws, lightsail]
 ---
 This is a journal of my setup for a Java server on AWS, Lightsail in particular for my [Sump Water Level Application](https://github.com/nobudev7/sumpdata) project.
 
@@ -570,7 +571,7 @@ Now that there are 2 applications that interact with users and devices are runni
 In configuring those endpoints, I want `/devices` endpoint, which is the REST API endpoint, to have limited access from my own devices. The easiest way is to limit the IP address(es) that can access to the endpoint.
 
 /etc/nginx/conf.d/sumpdata.conf
-```conf
+```nginx
 server {
     server_name  sumpdata.nobudev7.com;
 

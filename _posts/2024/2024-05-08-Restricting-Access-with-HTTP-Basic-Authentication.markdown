@@ -1,6 +1,7 @@
 ---
 layout: post
 categories: nginx
+tags: [nginx, security]
 ---
 ## Restricting Access with HTTP Basic Authentication
 

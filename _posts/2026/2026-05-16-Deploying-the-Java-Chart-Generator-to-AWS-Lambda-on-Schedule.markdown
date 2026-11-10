@@ -1,6 +1,7 @@
 ---
 layout: post
 categories: aws Raspi
+tags: [aws, java, serverless, raspberry-pi]
 ---
 
 This blog post provides a minimal, step-by-step procedure for deploying the [ChartGeneratorLambdaFunction](https://github.com/nobudev7/ChartGeneratorLambdaFunction) Java JAR as an AWS Lambda function and scheduling it to run every 5 minutes.

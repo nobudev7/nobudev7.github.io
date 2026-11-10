@@ -1,6 +1,7 @@
 ---
 title: Run a SpringBoot jar on Docker
 categories: docker spring
+tags: [spring-boot, docker, java]
 ---
 Some articles suggest to run a centos docker image to run SpringBoot app. Since CentOS is deprecated, I found that [amazoncorretto](https://hub.docker.com/_/amazoncorretto) is an option.
 
