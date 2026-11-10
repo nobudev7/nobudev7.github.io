@@ -1,6 +1,7 @@
 ---
 title: Set up React on Mac
 categories: react
+tags: [react, mac]
 ---
 ## Install Node.js
 

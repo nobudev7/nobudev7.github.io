@@ -2,6 +2,7 @@
 layout: post
 title: "Setting up Raspberry Pi with an Ultrasonic Sensor"
 categories: aws Raspi
+tags: [raspberry-pi, sensors]
 ---
 
 This post explains how to build a water level gauge using a Raspberry Pi Zero W and an HC-SR04 ultrasonic sensor. While this is a well-established application for distance measurement, I am tailoring it specifically for monitoring sump water levels.

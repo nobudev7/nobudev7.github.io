@@ -1,6 +1,7 @@
 ---
 title:  "GitHub Actions for Jar file deployment"
 categories: github
+tags: [github-actions, ci-cd]
 ---
 
 This is a memo for a [GitHub project](https://github.com/ntamagawa/sumpdata) that I'm planning to do CI/CD into an AWS instance (likely Lightsail AL2023).

@@ -1,5 +1,6 @@
 ---
 categories: java
+tags: [java]
 ---
 
 Various findings that would help me later.

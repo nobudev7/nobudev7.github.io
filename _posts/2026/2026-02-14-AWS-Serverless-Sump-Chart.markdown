@@ -1,6 +1,7 @@
 ---
 layout: post
 categories: aws
+tags: [aws, serverless]
 ---
 ## AWS Serverless Sump Chart
 

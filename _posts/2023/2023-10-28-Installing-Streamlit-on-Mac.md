@@ -1,5 +1,6 @@
 ---
 categories: python streamlit
+tags: [python, streamlit]
 ---
 
 ## Python

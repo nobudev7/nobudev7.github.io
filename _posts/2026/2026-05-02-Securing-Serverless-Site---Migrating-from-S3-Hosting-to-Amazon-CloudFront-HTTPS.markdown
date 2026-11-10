@@ -1,6 +1,7 @@
 ---
 layout: post
 categories: aws
+tags: [aws, cloudfront, serverless]
 ---
 Building a static site is easy, but making it professional and secure requires moving beyond basic S3 hosting. As part of my [AWS Serverless Sump Chart](https://www.nobudev7.com/aws/2026/02/14/AWS-Serverless-Sump-Chart.html) project, I recently migrated my site to a CloudFront-driven architecture to support HTTPS and a custom domain.
 Here is the breakdown of how I structured the setup and the critical "gotchas" I discovered along the way.

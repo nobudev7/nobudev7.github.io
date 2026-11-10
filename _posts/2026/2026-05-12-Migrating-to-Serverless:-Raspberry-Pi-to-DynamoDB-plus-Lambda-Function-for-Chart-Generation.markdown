@@ -1,6 +1,7 @@
 ---
 layout: post
 categories: aws Raspi
+tags: [aws, raspberry-pi, serverless]
 ---
 
 Building on the foundation of [SumpDataVisualizerCli](https://github.com/nobudev7/SumpDataVisualizerCli)—my original Java tool designed to generate chart images from local CSV files—I’ve spent this week evolving the project into a fully automated, cloud-native solution. The goal was to take that local visualization logic and migrate it to **AWS Lambda**, transforming a manual process into a seamless serverless pipeline that handles everything from data ingestion to chart delivery. In this post, I’ll walk through how I bridged the gap between a Raspberry Pi and the AWS cloud to create a robust, hands-off monitoring system.

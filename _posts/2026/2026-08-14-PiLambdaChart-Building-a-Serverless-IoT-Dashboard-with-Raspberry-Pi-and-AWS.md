@@ -2,6 +2,7 @@
 layout: post
 title: "PiLambdaChart: Building a Serverless IoT Dashboard with Raspberry Pi and AWS"
 categories: aws Raspi
+tags: [aws, raspberry-pi, serverless, java]
 ---
 
 
