@@ -1,0 +1,372 @@
+<!DOCTYPE html> <html lang="en"> <head> <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <title> Exploring Multi-Cloud Deployments: Migrating from AWS Lightsail to Oracle Cloud (OCI) | Nobu Dev Journal </title> <meta name="author" content="Nobu "> <meta name="description" content="Java backend developer journal covering high-performance web architecture, AWS serverless pipelines, and Raspberry Pi IoT projects. "> <meta name="keywords" content="java, spring-boot, aws, raspberry-pi, serverless, docker"> <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; media-src 'self' https:; frame-src 'self' https:; connect-src 'self' https:;"> <style>
+  :root {
+    --max-content-width: 930px;
+  }
+</style> <link rel="stylesheet" href="/assets/css/tailwind.css?v=50c64c15cbb9fd1ce6056fdb8bcb4b62"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css" integrity="sha256-MVopmdyC2tYTiJ8wlktf0uh0v4NgT+vNdyVFepi7Q0c=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/academicons@1.9.5/css/academicons.min.css" integrity="sha256-SzrCOBJbGVFMahewkgjwnApaV2+av1DwMAA+/QGLyZw=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/scholar-icons@1.0.3/css/scholar-icons.css" integrity="sha256-VY3hHVj/hNX3fYG6wtbA6TcKJQl7+FthzGSyIB64klY=" crossorigin="anonymous"> <link defer rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Material+Icons&amp;display=swap"> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-github.css?v=591dab5a4e56573bf4ef7fd332894c99" media="" id="highlight_theme_light"> <link rel="shortcut icon" href="data:image/svg+xml,&lt;svg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22&gt;&lt;text%20y=%22.9em%22%20font-size=%2290%22&gt;%F0%9F%92%BB&lt;/text&gt;&lt;/svg&gt;"> <link rel="stylesheet" href="/assets/css/main.css?v=3116ba77db9ee1581d05bb3e86fbf7f1"> <link rel="canonical" href="https://www.nobudev7.com/blog/2026/Exploring-Multi-Cloud-Deployments-Migrating-from-AWS-Lightsail-to-Oracle-Cloud-OCI/"> <script src="/assets/js/theme.js?v=5286c3e4c334d0ecb8fc0c40ff4fa7ec"></script> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-native.css?v=5847e5ed4a4568527aa6cfab446049ca" media="none" id="highlight_theme_dark"> <script>
+    initTheme();
+  </script> </head> <body class="fixed-top-nav "> <header> <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation"> <div class="container"> <a class="navbar-brand title font-weight-lighter" href="/"> Nobu Dev Journal </a> <button class="navbar-toggler collapsed navbar-toggler-main" type="button" data-nav-toggle="navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> <span class="sr-only">Toggle navigation</span> <span class="icon-bar top-bar"></span> <span class="icon-bar middle-bar"></span> <span class="icon-bar bottom-bar"></span> </button> <div class="collapse navbar-collapse navbar-collapse-main" id="navbarNav"> <ul class="navbar-nav navbar-menu-list flex-nowrap"> <li class="nav-item "> <a class="nav-link" href="/">about </a> </li> <li class="nav-item "> <a class="nav-link" href="/projects/">projects </a> </li> <li class="nav-item active"> <a class="nav-link" href="/blog/">blog </a> </li> <li class="nav-item"> <button id="search-toggle" type="button" title="Search" aria-label="Open search"> <span class="nav-link">ctrl k <i class="fa-solid fa-magnifying-glass"></i></span> </button> </li> <li class="toggle-container"> <button id="light-toggle" type="button" title="Change theme" aria-label="Change color theme"> <i class="fa-half-sun-moon" id="light-toggle-system"></i> <i class="fa-solid fa-moon" id="light-toggle-dark"></i> <i class="fa-solid fa-sun" id="light-toggle-light"></i> </button> </li> </ul> </div> </div> </nav> <progress id="progress" value="0"> <div class="progress-container"> <span class="progress-bar"></span> </div> </progress> </header> <div class="container mt-5" role="main"> <div class="post"> <header class="post-header"> <h1 class="post-title">Exploring Multi-Cloud Deployments: Migrating from AWS Lightsail to Oracle Cloud (OCI)</h1> <p class="post-meta"> Created on November 08, 2026 </p> <p class="post-tags"> <a href="/blog/2026"> <i class="fa-solid fa-calendar fa-sm"></i> 2026 </a>   ·   <a href="/blog/tag/aws"> <i class="fa-solid fa-hashtag fa-sm"></i> aws</a>   <a href="/blog/tag/cloud"> <i class="fa-solid fa-hashtag fa-sm"></i> cloud</a>   <a href="/blog/tag/devops"> <i class="fa-solid fa-hashtag fa-sm"></i> devops</a>   ·   <a href="/blog/category/cloud"> <i class="fa-solid fa-tag fa-sm"></i> cloud</a>   <a href="/blog/category/devops"> <i class="fa-solid fa-tag fa-sm"></i> devops</a>   <a href="/blog/category/aws"> <i class="fa-solid fa-tag fa-sm"></i> aws</a> </p> </header> <article class="post-content"> <div id="markdown-content"> <h2 id="motivation-beyond-single-vendor-lock-in">Motivation: Beyond Single-Vendor Lock-In</h2> <p>When I built and deployed <a href="https://github.com/nobudev7/marginalia" rel="external nofollow noopener" target="_blank">Marginalia</a>—my private, self-hosted RSS reader web application—<strong>AWS Lightsail</strong> was the natural starting point. For $7.00/month, Lightsail provided a simple, self-contained VPS with a bundled static IP and firewall. Paired with Docker Compose and Caddy for automated Let’s Encrypt TLS, it worked reliably and without fuss.</p> <p>However, relying entirely on a single cloud vendor introduces subtle technical trade-offs. As cloud offerings mature, different hyperscalers develop distinct strengths. For compute-heavy or persistent personal workloads, exploring alternative cloud providers—specifically <strong>Oracle Cloud Infrastructure (OCI)</strong> and its modern Ampere Altra ARM64 architecture—presented an exciting opportunity.</p> <p>While cutting operational costs from ~$7/month to <strong>$0/month</strong> through OCI’s Always Free tier was a welcome catalyst, the true engineering objective was broader: <strong>architectural vendor neutrality</strong>.</p> <p>I wanted Marginalia’s infrastructure to treat compute providers as interchangeable commodities. If AWS Lightsail, OCI, Hetzner, or a bare-metal server can run Docker, our Infrastructure as Code (IaC) and deployment workflows should support switching between them in minutes—without risking DNS misconfigurations or touching long-lived backup storage.</p> <hr> <h2 id="the-architecture-decoupling-compute-routing-and-backups">The Architecture: Decoupling Compute, Routing, and Backups</h2> <p>In monolithic Terraform repositories, compute instances, DNS records, and backup storage buckets often live inside the same <code class="language-plaintext highlighter-rouge">main.tf</code> and share a single state file.</p> <p>This tight coupling is dangerous during cloud migrations: running <code class="language-plaintext highlighter-rouge">terraform destroy</code> to decommission an old server risks accidentally destroying your DNS zones or wiping out historical database backup buckets.</p> <p>To achieve clean multi-vendor support, I restructured Marginalia’s deployment layout into <strong>four decoupled stacks</strong>, each with an independent lifecycle and isolated Terraform state:</p> <div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>deploy/terraform/
+├── README.md                 # Architecture matrix &amp; deployment quickstart
+├── aws-lightsail/            # Compute Option 1: AWS Lightsail (~$7/mo)
+├── oci/                      # Compute Option 2: Oracle Cloud ($0/mo Always Free ARM)
+├── dns-route53/              # Independent Routing: Route 53 A-record pointer
+└── backup-s3/                # Cross-Cloud DR: Encrypted S3 bucket &amp; retention policy
+</code></pre></div></div> <h3 id="1-pure-provider-isolation">1. Pure Provider Isolation</h3> <ul> <li> <code class="language-plaintext highlighter-rouge">deploy/terraform/oci/</code> depends <strong>exclusively</strong> on <code class="language-plaintext highlighter-rouge">oracle/oci</code>. It has zero AWS dependencies and requires no dummy AWS credentials.</li> <li> <code class="language-plaintext highlighter-rouge">deploy/terraform/aws-lightsail/</code> depends exclusively on <code class="language-plaintext highlighter-rouge">hashicorp/aws</code>.</li> <li> <code class="language-plaintext highlighter-rouge">deploy/terraform/dns-route53/</code> is simply a routing pointer. It takes a generic <code class="language-plaintext highlighter-rouge">target_ip</code> variable (derived from whichever compute stack is active) and updates the subdomain <code class="language-plaintext highlighter-rouge">A</code> record.</li> <li> <code class="language-plaintext highlighter-rouge">deploy/terraform/backup-s3/</code> manages an encrypted, private S3 bucket with 90-day lifecycle retention. It remains 100% untouched whether compute is hosted on AWS, OCI, or elsewhere.</li> </ul> <h3 id="2-zero-application-code-changes">2. Zero Application Code Changes</h3> <p>Because Docker base images (Ubuntu, Eclipse Temurin Java 25, Node.js 22, Caddy, MySQL 8.4) publish multi-architecture manifests supporting both <code class="language-plaintext highlighter-rouge">linux/amd64</code> and <code class="language-plaintext highlighter-rouge">linux/arm64</code>, the exact same <code class="language-plaintext highlighter-rouge">compose.yaml</code>, <code class="language-plaintext highlighter-rouge">Caddyfile</code>, environment configuration, and database scripts run identically on both AWS (x86_64) and OCI (ARM64).</p> <h3 id="3-component--technology-stack">3. Component &amp; Technology Stack</h3> <table> <thead> <tr> <th style="text-align: left">Component</th> <th style="text-align: left">Technology</th> <th style="text-align: left">Role</th> </tr> </thead> <tbody> <tr> <td style="text-align: left"><strong>Primary Cloud (Compute &amp; Networking)</strong></td> <td style="text-align: left">Oracle Cloud Infrastructure (OCI)</td> <td style="text-align: left">Ampere Altra ARM64 compute (<code class="language-plaintext highlighter-rouge">VM.Standard.A1.Flex</code>), VCN, Reserved Static IPv4</td> </tr> <tr> <td style="text-align: left"><strong>Secondary Cloud (DNS &amp; Disaster Recovery)</strong></td> <td style="text-align: left">Amazon Web Services (AWS)</td> <td style="text-align: left">Route 53 (subdomain routing) &amp; S3 (encrypted off-site backups)</td> </tr> <tr> <td style="text-align: left"><strong>Infrastructure as Code</strong></td> <td style="text-align: left">Terraform (v1.5+)</td> <td style="text-align: left">Decoupled multi-provider stacks (<code class="language-plaintext highlighter-rouge">aws-lightsail/</code>, <code class="language-plaintext highlighter-rouge">oci/</code>, <code class="language-plaintext highlighter-rouge">dns-route53/</code>, <code class="language-plaintext highlighter-rouge">backup-s3/</code>)</td> </tr> <tr> <td style="text-align: left"><strong>Container Orchestration</strong></td> <td style="text-align: left">Docker Engine &amp; Compose v2</td> <td style="text-align: left">Multi-arch container runtime (<code class="language-plaintext highlighter-rouge">linux/amd64</code> and <code class="language-plaintext highlighter-rouge">linux/arm64</code>)</td> </tr> <tr> <td style="text-align: left"><strong>Reverse Proxy &amp; TLS</strong></td> <td style="text-align: left">Caddy v2</td> <td style="text-align: left">Automated Let’s Encrypt ACME TLS, HTTP/3, and SPA static hosting</td> </tr> <tr> <td style="text-align: left"><strong>Application Stack</strong></td> <td style="text-align: left">Spring Boot 4.1 (Java 25) + React 19 + MySQL 8.4</td> <td style="text-align: left">Self-hosted RSS reader (<a href="https://github.com/nobudev7/marginalia" rel="external nofollow noopener" target="_blank">Marginalia</a>)</td> </tr> </tbody> </table> <hr> <h2 id="cross-cloud-resilience-the-real-win">Cross-Cloud Resilience: The Real Win</h2> <p>By combining OCI and AWS, Marginalia now operates with true <strong>cross-cloud resilience</strong>:</p> <pre><code class="language-mermaid">flowchart TD
+    User["Reader / Browser"] --&gt;|HTTPS 443| Route53["AWS Route 53 (DNS)"]
+    Route53 --&gt;|A Record Pointer| OCIHost["OCI Compute (Ampere ARM64)"]
+
+    subgraph "Oracle Cloud Infrastructure (Primary Host - $0/mo)"
+        OCIHost --&gt; Caddy["Caddy (Reverse Proxy &amp; Auto TLS)"]
+        Caddy --&gt; Backend["Spring Boot 4.1 (Java 25)"]
+        Backend --&gt; DB["MySQL 8.4 Database"]
+        Timer["systemd.timer (Daily 02:00 UTC)"] --&gt; BackupScript["./backup.sh"]
+        BackupScript --&gt; DB
+    end
+
+    subgraph "Amazon Web Services&lt;br/&gt;(Disaster Recovery Storage)"
+        BackupScript -.-&gt;|AWS CLI S3 Sync| S3Bucket["Private Encrypted S3 Bucket"]
+    end
+</code></pre> <ul> <li> <strong>Compute &amp; Ingestion</strong>: Handled by OCI’s high-performance Ampere Altra ARM64 instance (2 OCPUs, 12 GB RAM) at zero monthly cost.</li> <li> <strong>Off-Site Disaster Recovery</strong>: Handled by AWS S3. Daily compressed database backups are automatically pushed to an encrypted S3 bucket with automated 90-day lifecycle expiration. Even in the worst-case scenario of an OCI tenancy loss, not a single feed subscription or article bookmark is lost.</li> <li> <strong>Portability</strong>: If another cloud provider emerges in the future, adding a sibling directory under <code class="language-plaintext highlighter-rouge">deploy/terraform/</code> (e.g. <code class="language-plaintext highlighter-rouge">gcp-compute/</code> or <code class="language-plaintext highlighter-rouge">hetzner/</code>) requires only defining the VM and pointing <code class="language-plaintext highlighter-rouge">dns-route53</code> to its IP.</li> </ul> <hr> <h2 id="key-takeaways">Key Takeaways</h2> <ol> <li> <strong>Multi-cloud isn’t just for large enterprises</strong>: With modular Terraform stacks and Docker containerization, even solo developers and personal open-source projects can achieve cloud vendor independence without excessive complexity.</li> <li> <strong>Decouple state early</strong>: Separating compute from long-lived assets (DNS, storage, IAM) eliminates migration friction and prevents costly accidental deletions.</li> <li> <strong>ARM64 is fully production-ready</strong>: Moving a modern Java 25 LTS (Spring Boot 4.1) backend and React 19 frontend from x86_64 to ARM64 was entirely seamless—zero code modifications, zero build issues, and flawless container parity.</li> <li> <strong>Resilience through diversification</strong>: Running compute on one cloud while keeping encrypted backups on another gives you enterprise-grade disaster recovery while taking advantage of the best pricing each vendor offers.</li> </ol> <hr> <h2 id="appendix-the-migration-journey-step-by-step-operations">Appendix: The Migration Journey (Step-by-Step Operations)</h2> <p>For those interested in the operational mechanics, state surgery, and cutover commands, here is the detailed technical walkthrough.</p> <h3 id="phase-1-non-destructive-state-separation">Phase 1: Non-Destructive State Separation</h3> <p>Before touching any live infrastructure, I refactored the monolithic AWS state offline. Using <code class="language-plaintext highlighter-rouge">terraform state mv</code>, 10 existing AWS resources were split into the three new modular directories:</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Example: Moving Route 53 record into dns-route53 state</span>
+terraform state <span class="nb">mv</span> <span class="se">\</span>
+  <span class="nt">-state</span><span class="o">=</span>deploy/terraform/terraform.tfstate <span class="se">\</span>
+  <span class="nt">-state-out</span><span class="o">=</span>deploy/terraform/dns-route53/terraform.tfstate <span class="se">\</span>
+  aws_route53_record.marginalia aws_route53_record.marginalia
+</code></pre></div></div> <p>Running <code class="language-plaintext highlighter-rouge">terraform plan</code> on all three stacks afterward confirmed <strong><code class="language-plaintext highlighter-rouge">0 added, 0 changed, 0 destroyed</code></strong>—proving that the directory refactoring had zero impact on the live production server.</p> <h3 id="phase-2-building-the-oci-infrastructure-stack">Phase 2: Building the OCI Infrastructure Stack</h3> <p>Next, I wrote <code class="language-plaintext highlighter-rouge">deploy/terraform/oci/</code> to provision the new environment. Key technical solutions included:</p> <ol> <li> <strong>VCN &amp; Security Lists</strong>: OCI requires provisioning a dedicated Virtual Cloud Network (VCN), Internet Gateway, Route Table, and Subnet. The Security List explicitly allows ingress for SSH (port 22), HTTP (port 80), and HTTPS (port 443 TCP/UDP).</li> <li> <strong>Host-Level <code class="language-plaintext highlighter-rouge">iptables</code> Rules</strong>: OCI’s official Ubuntu images include restrictive host <code class="language-plaintext highlighter-rouge">iptables</code> rules that drop incoming traffic on ports 80 and 443 by default, regardless of the VCN Security List. In <code class="language-plaintext highlighter-rouge">user-data.sh.tftpl</code>, cloud-init automatically inserts <code class="language-plaintext highlighter-rouge">ACCEPT</code> rules before the default Ubuntu <code class="language-plaintext highlighter-rouge">REJECT</code> rule: <div class="language-bash highlighter-rouge"> <div class="highlight"><pre class="highlight"><code>iptables <span class="nt">-I</span> INPUT 6 <span class="nt">-p</span> tcp <span class="nt">--dport</span> 80 <span class="nt">-m</span> state <span class="nt">--state</span> NEW <span class="nt">-j</span> ACCEPT
+iptables <span class="nt">-I</span> INPUT 6 <span class="nt">-p</span> tcp <span class="nt">--dport</span> 443 <span class="nt">-m</span> state <span class="nt">--state</span> NEW <span class="nt">-j</span> ACCEPT
+netfilter-persistent save
+</code></pre></div> </div> </li> <li> <strong>Dynamic Image Lookup</strong>: Rather than hardcoding image OCIDs (which change with every OS release), Terraform dynamically queries the latest Canonical Ubuntu 24.04 image matching the target architecture (<code class="language-plaintext highlighter-rouge">aarch64</code> for Ampere ARM).</li> <li> <strong>Persistent Reserved Static IP</strong>: Allocated an Always Free Reserved Public IPv4 address (<code class="language-plaintext highlighter-rouge">oci_core_public_ip</code>) to ensure the host retains a fixed public IP across reboots and maintenance.</li> </ol> <h3 id="phase-3-the-zero-downtime-live-cutover">Phase 3: The Zero-Downtime Live Cutover</h3> <p>With the OCI instance provisioned and bootstrapped (Docker Engine, 2 GB swapfile, fail2ban), we performed the cutover:</p> <ol> <li> <strong>Pre-Staging</strong>: Cloned the repository to <code class="language-plaintext highlighter-rouge">/opt/marginalia</code> on the OCI host, copied <code class="language-plaintext highlighter-rouge">deploy/.env</code>, and pre-built the containers in parallel while the AWS Lightsail instance was still serving live traffic.</li> <li> <strong>Data Consistency</strong>: Paused the backend service on Lightsail to freeze database writes, generated a compressed database snapshot (<code class="language-plaintext highlighter-rouge">marginalia_backup.sql.gz</code>), transferred it to OCI, and restored it using <code class="language-plaintext highlighter-rouge">./deploy/restore.sh</code>. All 2,508 articles, 16 feeds, 9 categories, and Flyway schema migrations were verified intact.</li> <li> <strong>DNS Repointing</strong>: Updated <code class="language-plaintext highlighter-rouge">target_ip</code> in <code class="language-plaintext highlighter-rouge">deploy/terraform/dns-route53/terraform.tfvars</code> from the Lightsail IP to the OCI Reserved Static IP and executed <code class="language-plaintext highlighter-rouge">terraform apply</code>.</li> <li> <strong>Automated TLS Issuance</strong>: Within 60 seconds of the DNS record propagating, Caddy on OCI automatically solved the ACME HTTP-01 challenge and obtained a fresh Let’s Encrypt TLS certificate for <code class="language-plaintext highlighter-rouge">marginalia.nobudev7.com</code>.</li> <li> <strong>Rollback Safety Net</strong>: Rather than immediately deleting the AWS Lightsail VM, it was left stopped but fully intact for a 24–48 hour observation window. If any subtle issue arose on ARM64, reverting a single line in <code class="language-plaintext highlighter-rouge">dns-route53/terraform.tfvars</code> would restore the entire AWS stack instantly.</li> </ol> </div> </article> <br> <hr> <br> <h2 class="text-3xl font-semibold mb-4 mt-12">Enjoy Reading This Article?</h2> <p class="mb-2">Here are some more articles you might like to read next:</p> <ul class="list-disc pl-7 my-3 space-y-2 marker:text-[var(--global-theme-color)]"> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2024/AWS-Lightsail/">AWS Lightsail Java Server Setup Memo</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/PiLambdaChart-Building-a-Serverless-IoT-Dashboard-with-Raspberry-Pi-and-AWS/">PiLambdaChart: Building a Serverless IoT Dashboard with Raspberry Pi and AWS</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Migrating-to-Serverless-Raspberry-Pi-to-DynamoDB-plus-Lambda-Function-for-Chart-Generation/">Migrating To Serverless: Raspberry Pi To Dynamodb Plus Lambda Function For Chart Generation</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Building-and-Publishing-c4002-python-mmWave-Radar-Driver/">Building and Publishing c4002-python: A 24GHz mmWave Radar Driver for Raspberry Pi</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/AWS-Serverless-Sump-Chart/">Aws Serverless Sump Chart</a> </li> </ul> </div> </div> <footer class="fixed-bottom" role="contentinfo"> <div class="container mt-0"> © Copyright 2026 Nobu . Powered by <a href="https://jekyllrb.com/" target="_blank" rel="external nofollow noopener">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" rel="external nofollow noopener" target="_blank">al-folio</a> theme. </div> </footer> <script>
+  window.alFolio = {
+    compatBootstrap: false
+  };
+</script> <script src="/assets/js/nav-toggle.js?v=141bd79a73ebc0f0b6ea58e440ae79fc"></script> <script defer src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/imagesloaded@5.0.0/imagesloaded.pkgd.min.js" integrity="sha256-htrLFfZJ6v5udOG+3kNLINIKh2gvoKqwEhHYfTTMICc=" crossorigin="anonymous"></script> <script defer src="/assets/js/masonry.js?v=e49affc7bd2646f6acdad1dbe02c2359" type="text/javascript"></script> <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10.7.0/dist/mermaid.min.js" integrity="sha256-TtLOdUA8mstPoO6sGvHIGx2ceXrrX4KgIItO06XOn8A=" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js" integrity="sha256-1rA678n2xEx7x4cTZ5x4wpUCj6kUMZEZ5cxLSVSFWxw=" crossorigin="anonymous"></script> <script defer src="/assets/al_charts/js/mermaid-setup.js" type="text/javascript"></script> <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script> <script src="/assets/al_math/js/mathjax-setup.js"></script> <script src="/assets/js/tooltips-setup.js?v=fe487e99db6c43751e6e7bdb2d6a0611"></script> <script src="/assets/js/no_defer.js?v=53b1b1a645525975c963ce8bf8bfefcf"></script> <script defer src="/assets/js/common.js?v=87baac90f765f2f3362dcf6aaf312a8a"></script> <script defer src="/assets/js/copy_code.js?v=c8a01c11a92744d44b093fc3bda915df" type="text/javascript"></script> <script defer src="/assets/js/jupyter_new_tab.js?v=896d254890d9b47f0281f63bfccf0dee"></script> <script async src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script> <script async src="https://badge.dimensions.ai/badge.js"></script> <script defer src="https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js" integrity="sha256-ZgMyDAIYDYGxbcpJcfUnYwNevG/xi9OHKaR/8GK+jWc=" crossorigin="anonymous"></script> <script defer src="/assets/al_img_tools/js/zoom.js"></script> <script defer src="/assets/js/progress-bar.js?v=499464c5c63ced6cf7ad62509f1e2610" type="text/javascript"></script> <script src="https://cdn.jsdelivr.net/npm/vanilla-back-to-top@7.2.1/dist/vanilla-back-to-top.min.js" integrity="sha256-uMJJ3EoTyfRBoTbR+lrfu1uRQ87RZG8AR3cVNuQVeFg=" crossorigin="anonymous"></script> <script>
+    addBackToTop();
+  </script> <script type="module" src="/assets/al_search/js/search/ninja-keys.min.js"></script> <ninja-keys hidebreadcrumbs noautoloadmdicons placeholder="Type to start searching"></ninja-keys> <script src="/assets/al_search/js/search-setup.js"></script> <script>
+// get the ninja-keys element
+const ninja = document.querySelector('ninja-keys');
+
+// add the home and posts menu items
+ninja.data = [{
+    id: "nav-about",
+    title: "about",
+    section: "Navigation",
+    handler: () => {
+      window.location.href = "/";
+    },
+  },{id: "nav-projects",
+          title: "projects",
+          description: "Open-source projects, cloud infrastructure, and IoT telemetry systems.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/projects/";
+          },
+        },{id: "nav-blog",
+          title: "blog",
+          description: "",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/blog/";
+          },
+        },{id: "post-exploring-multi-cloud-deployments-migrating-from-aws-lightsail-to-oracle-cloud-oci",
+        
+          title: "Exploring Multi-Cloud Deployments: Migrating from AWS Lightsail to Oracle Cloud (OCI)",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Exploring-Multi-Cloud-Deployments-Migrating-from-AWS-Lightsail-to-Oracle-Cloud-OCI/";
+          
+        },
+      },{id: "post-building-and-publishing-c4002-python-a-24ghz-mmwave-radar-driver-for-raspberry-pi",
+        
+          title: "Building and Publishing c4002-python: A 24GHz mmWave Radar Driver for Raspberry Pi",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Building-and-Publishing-c4002-python-mmWave-Radar-Driver/";
+          
+        },
+      },{id: "post-pilambdachart-building-a-serverless-iot-dashboard-with-raspberry-pi-and-aws",
+        
+          title: "PiLambdaChart: Building a Serverless IoT Dashboard with Raspberry Pi and AWS",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/PiLambdaChart-Building-a-Serverless-IoT-Dashboard-with-Raspberry-Pi-and-AWS/";
+          
+        },
+      },{id: "post-setting-up-raspberry-pi-with-an-ultrasonic-sensor",
+        
+          title: "Setting up Raspberry Pi with an Ultrasonic Sensor",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Setting-Up-Pi-with-Ultrasonic-Sensor/";
+          
+        },
+      },{id: "post-using-an-ir-sensor-for-precise-distance-measurement-on-raspberry-pi",
+        
+          title: "Using an IR Sensor for Precise Distance Measurement on Raspberry Pi",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/using-ir-sensor-for-distance-measurement/";
+          
+        },
+      },{id: "post-deploying-the-java-chart-generator-to-aws-lambda-on-schedule",
+        
+          title: "Deploying The Java Chart Generator To Aws Lambda On Schedule",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Deploying-the-Java-Chart-Generator-to-AWS-Lambda-on-Schedule/";
+          
+        },
+      },{id: "post-migrating-to-serverless-raspberry-pi-to-dynamodb-plus-lambda-function-for-chart-generation",
+        
+          title: "Migrating To Serverless: Raspberry Pi To Dynamodb Plus Lambda Function For Chart Generation...",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Migrating-to-Serverless-Raspberry-Pi-to-DynamoDB-plus-Lambda-Function-for-Chart-Generation/";
+          
+        },
+      },{id: "post-securing-serverless-site-migrating-from-s3-hosting-to-amazon-cloudfront-https",
+        
+          title: "Securing Serverless Site   Migrating From S3 Hosting To Amazon Cloudfront Https",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Securing-Serverless-Site-Migrating-from-S3-Hosting-to-Amazon-CloudFront-HTTPS/";
+          
+        },
+      },{id: "post-aws-serverless-sump-chart",
+        
+          title: "Aws Serverless Sump Chart",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/AWS-Serverless-Sump-Chart/";
+          
+        },
+      },{id: "post-restricting-access-with-http-basic-authentication",
+        
+          title: "Restricting Access With Http Basic Authentication",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/Restricting-Access-with-HTTP-Basic-Authentication/";
+          
+        },
+      },{id: "post-vs-code-snippet-in-front-matter",
+        
+          title: "Vs Code Snippet In Front Matter",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/VS-Code-Snippet-In-Front-Matter/";
+          
+        },
+      },{id: "post-set-up-jekyll-locally-on-mac",
+        
+          title: "Set up Jekyll Locally on Mac",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/Set-up-Jekyll-locally-on-Mac/";
+          
+        },
+      },{id: "post-aws-lightsail-java-server-setup-memo",
+        
+          title: "AWS Lightsail Java Server Setup Memo",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/AWS-Lightsail/";
+          
+        },
+      },{id: "post-github-actions-for-jar-file-deployment",
+        
+          title: "GitHub Actions for Jar file deployment",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/GitHubActions/";
+          
+        },
+      },{id: "post-docker-nginx-demo",
+        
+          title: "Docker Nginx Demo",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/Docker-Nginx-Demo/";
+          
+        },
+      },{id: "post-my-java-memo",
+        
+          title: "My Java Memo",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/My-Java-Memo/";
+          
+        },
+      },{id: "post-installing-streamlit-on-mac",
+        
+          title: "Installing Streamlit On Mac",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/Installing-Streamlit-on-Mac/";
+          
+        },
+      },{id: "post-spring-boot-multiple-primary-keys-via-jpa",
+        
+          title: "Spring Boot: Multiple Primary Keys via JPA",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/Spring/";
+          
+        },
+      },{id: "post-docker-memo-mysql",
+        
+          title: "Docker Memo Mysql",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/Docker-Memo-MySQL/";
+          
+        },
+      },{id: "post-run-a-springboot-jar-on-docker",
+        
+          title: "Run a SpringBoot jar on Docker",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/SpringBootJar/";
+          
+        },
+      },{id: "post-set-up-react-on-mac",
+        
+          title: "Set up React on Mac",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/React-On-Mac/";
+          
+        },
+      },{id: "post-setting-up-intellij-community-edition",
+        
+          title: "Setting up IntelliJ Community Edition",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/IntelliJ/";
+          
+        },
+      },{id: "projects-pilambdachart",
+          title: 'PiLambdaChart',
+          description: "Serverless IoT telemetry platform ingesting Raspberry Pi sensor data into DynamoDB with scheduled AWS Lambda chart generation and S3/CloudFront hosting.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/PiLambdaChart/";
+            },},{id: "projects-c4002-python",
+          title: 'c4002-python',
+          description: "Python library and CLI monitor for the DFRobot C4002 24GHz mmWave radar sensor on Raspberry Pi.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/c4002-python/";
+            },},{id: "projects-marginalia",
+          title: 'marginalia',
+          description: "Private, self-hosted RSS reader web application in Java, designed for seamless access across desktop and mobile devices.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/marginalia/";
+            },},{id: "projects-sumpdata",
+          title: 'sumpdata',
+          description: "Showcase Java Spring Boot application that manages IoT device telemetry data via a clean REST API.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/sumpdata/";
+            },},{
+        id: 'social-github',
+        title: 'GitHub',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://github.com/nobudev7", "_blank");
+        },
+      },{
+        id: 'social-rss',
+        title: 'RSS Feed',
+        section: 'Socials',
+        handler: () => {
+          window.open("/feed.xml", "_blank");
+        },
+      },{
+      id: 'light-theme',
+      title: 'Change theme to light',
+      description: 'Change the theme of the site to Light',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("light");
+      },
+    },
+    {
+      id: 'dark-theme',
+      title: 'Change theme to dark',
+      description: 'Change the theme of the site to Dark',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("dark");
+      },
+    },
+    {
+      id: 'system-theme',
+      title: 'Use system default theme',
+      description: 'Change the theme of the site to System Default',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("system");
+      },
+    },];
+
+</script> <script src="/assets/al_search/js/shortcut-key.js"></script> </body> </html>

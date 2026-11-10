@@ -1,0 +1,381 @@
+<!DOCTYPE html> <html lang="en"> <head> <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <title> Building and Publishing c4002-python: A 24GHz mmWave Radar Driver for Raspberry Pi | Nobu Dev Journal </title> <meta name="author" content="Nobu "> <meta name="description" content="Java backend developer journal covering high-performance web architecture, AWS serverless pipelines, and Raspberry Pi IoT projects. "> <meta name="keywords" content="java, spring-boot, aws, raspberry-pi, serverless, docker"> <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; media-src 'self' https:; frame-src 'self' https:; connect-src 'self' https:;"> <style>
+  :root {
+    --max-content-width: 930px;
+  }
+</style> <link rel="stylesheet" href="/assets/css/tailwind.css?v=50c64c15cbb9fd1ce6056fdb8bcb4b62"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css" integrity="sha256-MVopmdyC2tYTiJ8wlktf0uh0v4NgT+vNdyVFepi7Q0c=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/academicons@1.9.5/css/academicons.min.css" integrity="sha256-SzrCOBJbGVFMahewkgjwnApaV2+av1DwMAA+/QGLyZw=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/scholar-icons@1.0.3/css/scholar-icons.css" integrity="sha256-VY3hHVj/hNX3fYG6wtbA6TcKJQl7+FthzGSyIB64klY=" crossorigin="anonymous"> <link defer rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Material+Icons&amp;display=swap"> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-github.css?v=591dab5a4e56573bf4ef7fd332894c99" media="" id="highlight_theme_light"> <link rel="shortcut icon" href="data:image/svg+xml,&lt;svg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22&gt;&lt;text%20y=%22.9em%22%20font-size=%2290%22&gt;%F0%9F%92%BB&lt;/text&gt;&lt;/svg&gt;"> <link rel="stylesheet" href="/assets/css/main.css?v=3116ba77db9ee1581d05bb3e86fbf7f1"> <link rel="canonical" href="https://www.nobudev7.com/blog/2026/Building-and-Publishing-c4002-python-mmWave-Radar-Driver/"> <script src="/assets/js/theme.js?v=5286c3e4c334d0ecb8fc0c40ff4fa7ec"></script> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-native.css?v=5847e5ed4a4568527aa6cfab446049ca" media="none" id="highlight_theme_dark"> <script>
+    initTheme();
+  </script> </head> <body class="fixed-top-nav "> <header> <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation"> <div class="container"> <a class="navbar-brand title font-weight-lighter" href="/"> Nobu Dev Journal </a> <button class="navbar-toggler collapsed navbar-toggler-main" type="button" data-nav-toggle="navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> <span class="sr-only">Toggle navigation</span> <span class="icon-bar top-bar"></span> <span class="icon-bar middle-bar"></span> <span class="icon-bar bottom-bar"></span> </button> <div class="collapse navbar-collapse navbar-collapse-main" id="navbarNav"> <ul class="navbar-nav navbar-menu-list flex-nowrap"> <li class="nav-item "> <a class="nav-link" href="/">about </a> </li> <li class="nav-item "> <a class="nav-link" href="/projects/">projects </a> </li> <li class="nav-item active"> <a class="nav-link" href="/blog/">blog </a> </li> <li class="nav-item"> <button id="search-toggle" type="button" title="Search" aria-label="Open search"> <span class="nav-link">ctrl k <i class="fa-solid fa-magnifying-glass"></i></span> </button> </li> <li class="toggle-container"> <button id="light-toggle" type="button" title="Change theme" aria-label="Change color theme"> <i class="fa-half-sun-moon" id="light-toggle-system"></i> <i class="fa-solid fa-moon" id="light-toggle-dark"></i> <i class="fa-solid fa-sun" id="light-toggle-light"></i> </button> </li> </ul> </div> </div> </nav> <progress id="progress" value="0"> <div class="progress-container"> <span class="progress-bar"></span> </div> </progress> </header> <div class="container mt-5" role="main"> <div class="post"> <header class="post-header"> <h1 class="post-title">Building and Publishing c4002-python: A 24GHz mmWave Radar Driver for Raspberry Pi</h1> <p class="post-meta"> Created on September 12, 2026 </p> <p class="post-tags"> <a href="/blog/2026"> <i class="fa-solid fa-calendar fa-sm"></i> 2026 </a>   ·   <a href="/blog/tag/python"> <i class="fa-solid fa-hashtag fa-sm"></i> python</a>   <a href="/blog/tag/raspberry-pi"> <i class="fa-solid fa-hashtag fa-sm"></i> raspberry-pi</a>   <a href="/blog/tag/open-source"> <i class="fa-solid fa-hashtag fa-sm"></i> open-source</a>   ·   <a href="/blog/category/python"> <i class="fa-solid fa-tag fa-sm"></i> python</a>   <a href="/blog/category/raspi"> <i class="fa-solid fa-tag fa-sm"></i> Raspi</a> </p> </header> <article class="post-content"> <div id="markdown-content"> <h2 id="open-source-links">Open Source Links</h2> <ul> <li> <strong>GitHub Repository</strong>: <a href="https://github.com/nobudev7/c4002-python" rel="external nofollow noopener" target="_blank">github.com/nobudev7/c4002-python</a> </li> <li> <strong>PyPI Package</strong>: <a href="https://pypi.org/project/c4002-python/" rel="external nofollow noopener" target="_blank">pypi.org/project/c4002-python/</a> </li> <li> <strong>Issue Tracker</strong>: <a href="https://github.com/nobudev7/c4002-python/issues" rel="external nofollow noopener" target="_blank">github.com/nobudev7/c4002-python/issues</a> </li> </ul> <hr> <h2 id="technologies-used">Technologies used</h2> <table> <thead> <tr> <th style="text-align: left">Component</th> <th style="text-align: left">Technology</th> <th style="text-align: left">Role</th> </tr> </thead> <tbody> <tr> <td style="text-align: left">Hardware</td> <td style="text-align: left">Raspberry Pi</td> <td style="text-align: left">Host controller &amp; UART interface</td> </tr> <tr> <td style="text-align: left">Sensor</td> <td style="text-align: left">DFRobot C4002 (SEN0691)</td> <td style="text-align: left">24GHz FMCW mmWave human presence radar</td> </tr> <tr> <td style="text-align: left">Language</td> <td style="text-align: left">Python 3.8+</td> <td style="text-align: left">Driver, CLI utilities, and telemetry decoder</td> </tr> <tr> <td style="text-align: left">Packaging</td> <td style="text-align: left">Hatchling / pyproject.toml</td> <td style="text-align: left">PEP 517/621 build backend</td> </tr> <tr> <td style="text-align: left">CI/CD &amp; Release</td> <td style="text-align: left">GitHub Actions + PyPI OIDC</td> <td style="text-align: left">Automated testing, linting, and Trusted Publishing</td> </tr> </tbody> </table> <h2 id="motivation">Motivation</h2> <p>Traditional PIR (Passive Infrared) motion sensors are the standard choice for smart lighting and home automation, but they have a fundamental limitation: they only detect gross movement. If you sit still, a PIR sensor doesn’t report any movement.</p> <p>To achieve <strong>true human presence detection</strong>, 24GHz millimeter-wave (mmWave) FMCW radar sensors work very well. They can detect micro-motions as subtle as human respiration and chest expansion up to 10 meters away.</p> <p>Recently, I integrated the <strong>DFRobot C4002 (SEN0691)</strong> mmWave sensor into my Raspberry Pi home monitoring setup. However, while DFRobot provides an Arduino C++ library, there wasn’t a pip-installable Python package available for Linux and Raspberry Pi developers.</p> <p>I decided to build <strong><code class="language-plaintext highlighter-rouge">c4002-python</code></strong> from the ground up, test it thoroughly on actual hardware, and publish it as an open-source package on <a href="https://pypi.org/project/c4002-python/" rel="external nofollow noopener" target="_blank">PyPI</a> and <a href="https://github.com/nobudev7/c4002-python" rel="external nofollow noopener" target="_blank">GitHub</a>.</p> <p><img src="/images/2026-09-12/c4002-sensor.jpg" alt="DFRobot C4002 mmWave Sensor"></p> <hr> <h2 id="the-hardware-dfrobot-c4002-sen0691">The Hardware: DFRobot C4002 (SEN0691)</h2> <p>The C4002 is a compact 24GHz FMCW radar module that operates between 3.6V and 5.5V with 3.3V TTL UART logic:</p> <ul> <li> <strong>Micro-Motion &amp; Static Presence</strong>: Detects sitting, breathing, or sleeping individuals up to 10 meters.</li> <li> <strong>Motion Tracking</strong>: Measures target distance, speed, signal energy (0–100), and direction (<code class="language-plaintext highlighter-rouge">Approaching</code> vs <code class="language-plaintext highlighter-rouge">Moving Away</code>) up to 11 meters.</li> <li> <strong>Ambient Light Sensor</strong>: Onboard photosensor rated for 0–50 Lux, useful for dusk-to-dawn lighting triggers.</li> <li> <strong>Configurable Distance Gates</strong>: 80cm or 20cm resolution gates with customizable sensitivity thresholds.</li> <li> <strong>Dual Output Modes</strong>: Standard 115200 baud UART protocol plus a digital <code class="language-plaintext highlighter-rouge">OUT</code> GPIO pin.</li> </ul> <h3 id="wiring-to-raspberry-pi">Wiring to Raspberry Pi</h3> <p>Connecting the C4002 to a Raspberry Pi’s 40-pin GPIO header requires only 4 or 5 jumper wires:</p> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  Raspberry Pi GPIO Header                  DFRobot C4002
+ ┌─────────────────────────┐               ┌─────────────┐
+ │ Pin 2  [5V]             ├───────────────┤ VIN         │
+ │ Pin 6  [GND]            ├───────────────┤ GND         │
+ │ Pin 8  [GPIO 14 / TXD]  ├───────────────┤ RX          │
+ │ Pin 10 [GPIO 15 / RXD]  ├───────────────┤ TX          │
+ │ Pin 11 [GPIO 17]        ├───────────────┤ OUT (opt)   │
+ └─────────────────────────┘               └─────────────┘
+</code></pre></div></div> <hr> <h2 id="decoding-the-32-byte-binary-uart-protocol">Decoding the 32-Byte Binary UART Protocol</h2> <p>The C4002 continuously streams 32-byte binary notification frames at 115200 baud. The frame layout is structured as follows:</p> <ol> <li> <strong>Header (4 bytes)</strong>: Fixed synchronization pattern <code class="language-plaintext highlighter-rouge">0xFA 0xF5 0xAA 0xA5</code>.</li> <li> <strong>Length (2 bytes, LE)</strong>: Total packet length (<code class="language-plaintext highlighter-rouge">0x0020</code> = 32 bytes).</li> <li> <strong>Control (2 bytes)</strong>: Reserved byte <code class="language-plaintext highlighter-rouge">0x00</code> and message type (<code class="language-plaintext highlighter-rouge">0x04</code> for Notification).</li> <li> <strong>Command ID (1 byte)</strong>: <code class="language-plaintext highlighter-rouge">0x60</code> for live detection telemetry or <code class="language-plaintext highlighter-rouge">0x03</code> for background noise calibration status.</li> <li> <strong>Inner Payload</strong>: <ul> <li>Target Status (<code class="language-plaintext highlighter-rouge">0 = No Target</code>, <code class="language-plaintext highlighter-rouge">1 = Static Presence</code>, <code class="language-plaintext highlighter-rouge">2 = Motion</code>)</li> <li>Ambient Light Intensity (uint16 LE, scale <code class="language-plaintext highlighter-rouge">0.1 Lux</code>)</li> <li>Active Distance Gate bitmask (uint32 LE)</li> <li>Presence Disappearance Countdown (uint16 LE, seconds)</li> <li>Presence Distance (uint16 LE cm) &amp; Energy (uint8, 0–100)</li> <li>Motion Distance (uint16 LE cm), Speed (signed int16 LE cm/s), Energy, and Direction</li> </ul> </li> <li> <strong>Checksum (2 bytes, LE)</strong>: 16-bit sum of all preceding bytes (<code class="language-plaintext highlighter-rouge">sum(bytes[:-2]) &amp; 0xFFFF</code>).</li> </ol> <h3 id="real-world-engineering-challenges">Real-World Engineering Challenges</h3> <p>Building a production-ready driver required solving several practical hardware quirks:</p> <h3 id="1-zero-lag-hardware-synchronization">1. Zero-Lag Hardware Synchronization</h3> <p>While using <code class="language-plaintext highlighter-rouge">time.sleep()</code> between reads was convenient at the beginning, it introduced serial buffer lag because the sensor streams telemetry continuously. For efficiency and real-time responsiveness, <code class="language-plaintext highlighter-rouge">read_packet()</code> blocks directly on the incoming UART stream until the next validated frame arrives:</p> <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Paced directly by the sensor hardware clock
+</span><span class="n">data</span> <span class="o">=</span> <span class="n">sensor</span><span class="p">.</span><span class="nf">read_packet</span><span class="p">()</span>
+</code></pre></div></div> <p>Letting the hardware clock pace the read loop eliminates buffer backlog and keeps CPU usage near zero.</p> <h3 id="2-dark--stealth-mode-turning-off-onboard-leds">2. Dark / Stealth Mode (Turning Off Onboard LEDs)</h3> <p>The C4002 module features two bright onboard LEDs: a blue <code class="language-plaintext highlighter-rouge">RUN</code> status LED and an <code class="language-plaintext highlighter-rouge">OUT</code> detection indicator. In a bedroom or office, the bright blue LED can be distracting.</p> <p>By analyzing the module’s protocol command <code class="language-plaintext highlighter-rouge">CMD_SET_LED_MODE = 0xA1</code>, I implemented software-controllable LED states:</p> <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Stealth mode: completely turn off both LEDs over UART
+</span><span class="n">sensor</span><span class="p">.</span><span class="nf">turn_off_leds</span><span class="p">()</span>
+
+<span class="c1"># Or toggle them individually
+</span><span class="n">sensor</span><span class="p">.</span><span class="nf">set_run_led</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">sensor</span><span class="p">.</span><span class="nf">set_out_led</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+</code></pre></div></div> <p>Both example scripts also expose CLI flags (<code class="language-plaintext highlighter-rouge">--led-off</code> and <code class="language-plaintext highlighter-rouge">--led-on</code>) for instant toggling.</p> <h3 id="3-automatic-background-noise-calibration">3. Automatic Background Noise Calibration</h3> <p>High-frequency 24GHz radar waves reflect off stationary room objects (metal cabinets, ceiling fans, moving curtains). The sensor includes a built-in background noise learning routine (<code class="language-plaintext highlighter-rouge">CMD_ENV_CALIBRATION = 0x60</code>). The library exposes:</p> <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sensor</span><span class="p">.</span><span class="nf">start_env_calibration</span><span class="p">(</span><span class="n">delay_time</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">cont_time</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+</code></pre></div></div> <p>This gives you 10 seconds to exit the room, after which the sensor samples background reflections for 30 seconds and writes custom noise thresholds to prevent false triggers.</p> <h3 id="4-1-minute-windowed-time-series-aggregation">4. 1-Minute Windowed Time-Series Aggregation</h3> <p>Checking presence every 60 seconds directly risks missing transient events (e.g., someone walking through a room for 15 seconds). I added a windowed aggregator (<code class="language-plaintext highlighter-rouge">examples/minute_aggregator.py</code>) that continuously monitors the sensor at 1 Hz and exports 1-minute summaries (<code class="language-plaintext highlighter-rouge">occupancy_pct</code>, <code class="language-plaintext highlighter-rouge">avg_distance_m</code>, <code class="language-plaintext highlighter-rouge">max_motion_energy</code>, <code class="language-plaintext highlighter-rouge">avg_light_lux</code>) into CSV format, ready for Grafana or home dashboard charting.</p> <hr> <h2 id="packaging-and-cicd-pipeline">Packaging and CI/CD Pipeline</h2> <p>To ensure the library is reliable and maintainable, I set up modern Python packaging and automation standards:</p> <h3 id="1-modern-build-system-with-pyprojecttoml">1. Modern Build System with <code class="language-plaintext highlighter-rouge">pyproject.toml</code> </h3> <p>Instead of legacy <code class="language-plaintext highlighter-rouge">setup.py</code>, the package uses PEP 517/621 with <a href="https://hatch.pypa.io/" rel="external nofollow noopener" target="_blank">Hatchling</a>:</p> <ul> <li>Strict metadata and type hints.</li> <li>Optional Raspberry Pi GPIO support via extra: <code class="language-plaintext highlighter-rouge">pip install "c4002-python[gpio]"</code>.</li> <li>Fast linting with <strong>Ruff</strong> configured to Python 3.8+ targets.</li> </ul> <h3 id="2-multi-version-testing-on-github-actions">2. Multi-Version Testing on GitHub Actions</h3> <p>A GitHub Actions test workflow runs on every push and pull request, executing test suites across Python <strong>3.8, 3.9, 3.10, 3.11, and 3.12</strong> on Ubuntu runners using captured live sensor packet fixtures.</p> <h3 id="3-publishing-to-pypi-via-trusted-publishers-oidc">3. Publishing to PyPI via Trusted Publishers (OIDC)</h3> <p>Instead of storing permanent PyPI API tokens in GitHub repository secrets, <code class="language-plaintext highlighter-rouge">c4002-python</code> uses PyPI’s <strong>Trusted Publisher</strong> mechanism.</p> <p>When a new version tag (e.g. <code class="language-plaintext highlighter-rouge">v0.2.0</code>) is published on GitHub, GitHub Actions generates an OpenID Connect (OIDC) cryptographic token. PyPI verifies the token directly against the repository identity (<code class="language-plaintext highlighter-rouge">nobudev7/c4002-python</code>) and workflow (<code class="language-plaintext highlighter-rouge">publish.yml</code>), building and publishing the source distribution (<code class="language-plaintext highlighter-rouge">.tar.gz</code>) and wheel (<code class="language-plaintext highlighter-rouge">.whl</code>) without any manual secrets.</p> <hr> <h2 id="getting-started">Getting Started</h2> <h3 id="installation">Installation</h3> <p>Install directly from PyPI:</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Standard installation</span>
+pip <span class="nb">install </span>c4002-python
+
+<span class="c"># With Raspberry Pi GPIO OUT pin support</span>
+pip <span class="nb">install</span> <span class="s2">"c4002-python[gpio]"</span>
+</code></pre></div></div> <h3 id="quick-example">Quick Example</h3> <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">c4002</span> <span class="kn">import</span> <span class="n">C4002Sensor</span>
+
+<span class="c1"># Connect to Raspberry Pi hardware UART (/dev/serial0)
+</span><span class="k">with</span> <span class="nc">C4002Sensor</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="sh">"</span><span class="s">/dev/serial0</span><span class="sh">"</span><span class="p">)</span> <span class="k">as</span> <span class="n">sensor</span><span class="p">:</span>
+    <span class="c1"># Optional: disable onboard LEDs for dark environments
+</span>    <span class="n">sensor</span><span class="p">.</span><span class="nf">turn_off_leds</span><span class="p">()</span>
+
+    <span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="s">Monitoring presence. Press Ctrl+C to stop...</span><span class="sh">"</span><span class="p">)</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">sensor</span><span class="p">.</span><span class="nf">read_packet</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">data</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nf">getattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="sh">"</span><span class="s">is_calibrating</span><span class="sh">"</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+            <span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">State: </span><span class="si">{</span><span class="n">data</span><span class="p">.</span><span class="n">target_state_name</span><span class="si">}</span><span class="s"> | Light: </span><span class="si">{</span><span class="n">data</span><span class="p">.</span><span class="n">ambient_light_lux</span><span class="si">}</span><span class="s"> Lux</span><span class="sh">"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">data</span><span class="p">.</span><span class="n">presence_detected</span><span class="p">:</span>
+                <span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">  Presence Distance : </span><span class="si">{</span><span class="n">data</span><span class="p">.</span><span class="n">presence_distance_m</span><span class="si">}</span><span class="s"> m (Energy: </span><span class="si">{</span><span class="n">data</span><span class="p">.</span><span class="n">presence_energy</span><span class="si">}</span><span class="s">/100)</span><span class="sh">"</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">data</span><span class="p">.</span><span class="n">motion_distance_m</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">  Motion Tracking   : </span><span class="si">{</span><span class="n">data</span><span class="p">.</span><span class="n">motion_distance_m</span><span class="si">}</span><span class="s"> m at </span><span class="si">{</span><span class="n">data</span><span class="p">.</span><span class="n">motion_speed_m_s</span><span class="si">}</span><span class="s"> m/s (</span><span class="si">{</span><span class="n">data</span><span class="p">.</span><span class="n">motion_direction_name</span><span class="si">}</span><span class="s">)</span><span class="sh">"</span><span class="p">)</span>
+</code></pre></div></div> <hr> <p>If you’re building a Raspberry Pi presence detection project, give it a spin and feel free to open an issue or pull request!</p> </div> </article> <br> <hr> <br> <h2 class="text-3xl font-semibold mb-4 mt-12">Enjoy Reading This Article?</h2> <p class="mb-2">Here are some more articles you might like to read next:</p> <ul class="list-disc pl-7 my-3 space-y-2 marker:text-[var(--global-theme-color)]"> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/PiLambdaChart-Building-a-Serverless-IoT-Dashboard-with-Raspberry-Pi-and-AWS/">PiLambdaChart: Building a Serverless IoT Dashboard with Raspberry Pi and AWS</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2024/AWS-Lightsail/">AWS Lightsail Java Server Setup Memo</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/using-ir-sensor-for-distance-measurement/">Using an IR Sensor for Precise Distance Measurement on Raspberry Pi</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Setting-Up-Pi-with-Ultrasonic-Sensor/">Setting up Raspberry Pi with an Ultrasonic Sensor</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Migrating-to-Serverless-Raspberry-Pi-to-DynamoDB-plus-Lambda-Function-for-Chart-Generation/">Migrating To Serverless: Raspberry Pi To Dynamodb Plus Lambda Function For Chart Generation</a> </li> </ul> </div> </div> <footer class="fixed-bottom" role="contentinfo"> <div class="container mt-0"> © Copyright 2026 Nobu . Powered by <a href="https://jekyllrb.com/" target="_blank" rel="external nofollow noopener">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" rel="external nofollow noopener" target="_blank">al-folio</a> theme. </div> </footer> <script>
+  window.alFolio = {
+    compatBootstrap: false
+  };
+</script> <script src="/assets/js/nav-toggle.js?v=141bd79a73ebc0f0b6ea58e440ae79fc"></script> <script defer src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/imagesloaded@5.0.0/imagesloaded.pkgd.min.js" integrity="sha256-htrLFfZJ6v5udOG+3kNLINIKh2gvoKqwEhHYfTTMICc=" crossorigin="anonymous"></script> <script defer src="/assets/js/masonry.js?v=e49affc7bd2646f6acdad1dbe02c2359" type="text/javascript"></script> <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script> <script src="/assets/al_math/js/mathjax-setup.js"></script> <script src="/assets/js/tooltips-setup.js?v=fe487e99db6c43751e6e7bdb2d6a0611"></script> <script src="/assets/js/no_defer.js?v=53b1b1a645525975c963ce8bf8bfefcf"></script> <script defer src="/assets/js/common.js?v=87baac90f765f2f3362dcf6aaf312a8a"></script> <script defer src="/assets/js/copy_code.js?v=c8a01c11a92744d44b093fc3bda915df" type="text/javascript"></script> <script defer src="/assets/js/jupyter_new_tab.js?v=896d254890d9b47f0281f63bfccf0dee"></script> <script async src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script> <script async src="https://badge.dimensions.ai/badge.js"></script> <script defer src="https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js" integrity="sha256-ZgMyDAIYDYGxbcpJcfUnYwNevG/xi9OHKaR/8GK+jWc=" crossorigin="anonymous"></script> <script defer src="/assets/al_img_tools/js/zoom.js"></script> <script defer src="/assets/js/progress-bar.js?v=499464c5c63ced6cf7ad62509f1e2610" type="text/javascript"></script> <script src="https://cdn.jsdelivr.net/npm/vanilla-back-to-top@7.2.1/dist/vanilla-back-to-top.min.js" integrity="sha256-uMJJ3EoTyfRBoTbR+lrfu1uRQ87RZG8AR3cVNuQVeFg=" crossorigin="anonymous"></script> <script>
+    addBackToTop();
+  </script> <script type="module" src="/assets/al_search/js/search/ninja-keys.min.js"></script> <ninja-keys hidebreadcrumbs noautoloadmdicons placeholder="Type to start searching"></ninja-keys> <script src="/assets/al_search/js/search-setup.js"></script> <script>
+// get the ninja-keys element
+const ninja = document.querySelector('ninja-keys');
+
+// add the home and posts menu items
+ninja.data = [{
+    id: "nav-about",
+    title: "about",
+    section: "Navigation",
+    handler: () => {
+      window.location.href = "/";
+    },
+  },{id: "nav-projects",
+          title: "projects",
+          description: "Open-source projects, cloud infrastructure, and IoT telemetry systems.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/projects/";
+          },
+        },{id: "nav-blog",
+          title: "blog",
+          description: "",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/blog/";
+          },
+        },{id: "post-exploring-multi-cloud-deployments-migrating-from-aws-lightsail-to-oracle-cloud-oci",
+        
+          title: "Exploring Multi-Cloud Deployments: Migrating from AWS Lightsail to Oracle Cloud (OCI)",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Exploring-Multi-Cloud-Deployments-Migrating-from-AWS-Lightsail-to-Oracle-Cloud-OCI/";
+          
+        },
+      },{id: "post-building-and-publishing-c4002-python-a-24ghz-mmwave-radar-driver-for-raspberry-pi",
+        
+          title: "Building and Publishing c4002-python: A 24GHz mmWave Radar Driver for Raspberry Pi",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Building-and-Publishing-c4002-python-mmWave-Radar-Driver/";
+          
+        },
+      },{id: "post-pilambdachart-building-a-serverless-iot-dashboard-with-raspberry-pi-and-aws",
+        
+          title: "PiLambdaChart: Building a Serverless IoT Dashboard with Raspberry Pi and AWS",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/PiLambdaChart-Building-a-Serverless-IoT-Dashboard-with-Raspberry-Pi-and-AWS/";
+          
+        },
+      },{id: "post-setting-up-raspberry-pi-with-an-ultrasonic-sensor",
+        
+          title: "Setting up Raspberry Pi with an Ultrasonic Sensor",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Setting-Up-Pi-with-Ultrasonic-Sensor/";
+          
+        },
+      },{id: "post-using-an-ir-sensor-for-precise-distance-measurement-on-raspberry-pi",
+        
+          title: "Using an IR Sensor for Precise Distance Measurement on Raspberry Pi",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/using-ir-sensor-for-distance-measurement/";
+          
+        },
+      },{id: "post-deploying-the-java-chart-generator-to-aws-lambda-on-schedule",
+        
+          title: "Deploying The Java Chart Generator To Aws Lambda On Schedule",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Deploying-the-Java-Chart-Generator-to-AWS-Lambda-on-Schedule/";
+          
+        },
+      },{id: "post-migrating-to-serverless-raspberry-pi-to-dynamodb-plus-lambda-function-for-chart-generation",
+        
+          title: "Migrating To Serverless: Raspberry Pi To Dynamodb Plus Lambda Function For Chart Generation...",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Migrating-to-Serverless-Raspberry-Pi-to-DynamoDB-plus-Lambda-Function-for-Chart-Generation/";
+          
+        },
+      },{id: "post-securing-serverless-site-migrating-from-s3-hosting-to-amazon-cloudfront-https",
+        
+          title: "Securing Serverless Site   Migrating From S3 Hosting To Amazon Cloudfront Https",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Securing-Serverless-Site-Migrating-from-S3-Hosting-to-Amazon-CloudFront-HTTPS/";
+          
+        },
+      },{id: "post-aws-serverless-sump-chart",
+        
+          title: "Aws Serverless Sump Chart",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/AWS-Serverless-Sump-Chart/";
+          
+        },
+      },{id: "post-restricting-access-with-http-basic-authentication",
+        
+          title: "Restricting Access With Http Basic Authentication",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/Restricting-Access-with-HTTP-Basic-Authentication/";
+          
+        },
+      },{id: "post-vs-code-snippet-in-front-matter",
+        
+          title: "Vs Code Snippet In Front Matter",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/VS-Code-Snippet-In-Front-Matter/";
+          
+        },
+      },{id: "post-set-up-jekyll-locally-on-mac",
+        
+          title: "Set up Jekyll Locally on Mac",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/Set-up-Jekyll-locally-on-Mac/";
+          
+        },
+      },{id: "post-aws-lightsail-java-server-setup-memo",
+        
+          title: "AWS Lightsail Java Server Setup Memo",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/AWS-Lightsail/";
+          
+        },
+      },{id: "post-github-actions-for-jar-file-deployment",
+        
+          title: "GitHub Actions for Jar file deployment",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/GitHubActions/";
+          
+        },
+      },{id: "post-docker-nginx-demo",
+        
+          title: "Docker Nginx Demo",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/Docker-Nginx-Demo/";
+          
+        },
+      },{id: "post-my-java-memo",
+        
+          title: "My Java Memo",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/My-Java-Memo/";
+          
+        },
+      },{id: "post-installing-streamlit-on-mac",
+        
+          title: "Installing Streamlit On Mac",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/Installing-Streamlit-on-Mac/";
+          
+        },
+      },{id: "post-spring-boot-multiple-primary-keys-via-jpa",
+        
+          title: "Spring Boot: Multiple Primary Keys via JPA",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/Spring/";
+          
+        },
+      },{id: "post-docker-memo-mysql",
+        
+          title: "Docker Memo Mysql",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/Docker-Memo-MySQL/";
+          
+        },
+      },{id: "post-run-a-springboot-jar-on-docker",
+        
+          title: "Run a SpringBoot jar on Docker",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/SpringBootJar/";
+          
+        },
+      },{id: "post-set-up-react-on-mac",
+        
+          title: "Set up React on Mac",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/React-On-Mac/";
+          
+        },
+      },{id: "post-setting-up-intellij-community-edition",
+        
+          title: "Setting up IntelliJ Community Edition",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/IntelliJ/";
+          
+        },
+      },{id: "projects-pilambdachart",
+          title: 'PiLambdaChart',
+          description: "Serverless IoT telemetry platform ingesting Raspberry Pi sensor data into DynamoDB with scheduled AWS Lambda chart generation and S3/CloudFront hosting.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/PiLambdaChart/";
+            },},{id: "projects-c4002-python",
+          title: 'c4002-python',
+          description: "Python library and CLI monitor for the DFRobot C4002 24GHz mmWave radar sensor on Raspberry Pi.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/c4002-python/";
+            },},{id: "projects-marginalia",
+          title: 'marginalia',
+          description: "Private, self-hosted RSS reader web application in Java, designed for seamless access across desktop and mobile devices.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/marginalia/";
+            },},{id: "projects-sumpdata",
+          title: 'sumpdata',
+          description: "Showcase Java Spring Boot application that manages IoT device telemetry data via a clean REST API.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/sumpdata/";
+            },},{
+        id: 'social-github',
+        title: 'GitHub',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://github.com/nobudev7", "_blank");
+        },
+      },{
+        id: 'social-rss',
+        title: 'RSS Feed',
+        section: 'Socials',
+        handler: () => {
+          window.open("/feed.xml", "_blank");
+        },
+      },{
+      id: 'light-theme',
+      title: 'Change theme to light',
+      description: 'Change the theme of the site to Light',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("light");
+      },
+    },
+    {
+      id: 'dark-theme',
+      title: 'Change theme to dark',
+      description: 'Change the theme of the site to Dark',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("dark");
+      },
+    },
+    {
+      id: 'system-theme',
+      title: 'Use system default theme',
+      description: 'Change the theme of the site to System Default',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("system");
+      },
+    },];
+
+</script> <script src="/assets/al_search/js/shortcut-key.js"></script> </body> </html>

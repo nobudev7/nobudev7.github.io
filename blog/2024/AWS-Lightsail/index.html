@@ -1,0 +1,701 @@
+<!DOCTYPE html> <html lang="en"> <head> <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <title> AWS Lightsail Java Server Setup Memo | Nobu Dev Journal </title> <meta name="author" content="Nobu "> <meta name="description" content="Java backend developer journal covering high-performance web architecture, AWS serverless pipelines, and Raspberry Pi IoT projects. "> <meta name="keywords" content="java, spring-boot, aws, raspberry-pi, serverless, docker"> <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; media-src 'self' https:; frame-src 'self' https:; connect-src 'self' https:;"> <style>
+  :root {
+    --max-content-width: 930px;
+  }
+</style> <link rel="stylesheet" href="/assets/css/tailwind.css?v=50c64c15cbb9fd1ce6056fdb8bcb4b62"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css" integrity="sha256-MVopmdyC2tYTiJ8wlktf0uh0v4NgT+vNdyVFepi7Q0c=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/academicons@1.9.5/css/academicons.min.css" integrity="sha256-SzrCOBJbGVFMahewkgjwnApaV2+av1DwMAA+/QGLyZw=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/scholar-icons@1.0.3/css/scholar-icons.css" integrity="sha256-VY3hHVj/hNX3fYG6wtbA6TcKJQl7+FthzGSyIB64klY=" crossorigin="anonymous"> <link defer rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Material+Icons&amp;display=swap"> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-github.css?v=591dab5a4e56573bf4ef7fd332894c99" media="" id="highlight_theme_light"> <link rel="shortcut icon" href="data:image/svg+xml,&lt;svg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22&gt;&lt;text%20y=%22.9em%22%20font-size=%2290%22&gt;%F0%9F%92%BB&lt;/text&gt;&lt;/svg&gt;"> <link rel="stylesheet" href="/assets/css/main.css?v=3116ba77db9ee1581d05bb3e86fbf7f1"> <link rel="canonical" href="https://www.nobudev7.com/blog/2024/AWS-Lightsail/"> <script src="/assets/js/theme.js?v=5286c3e4c334d0ecb8fc0c40ff4fa7ec"></script> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-native.css?v=5847e5ed4a4568527aa6cfab446049ca" media="none" id="highlight_theme_dark"> <script>
+    initTheme();
+  </script> </head> <body class="fixed-top-nav "> <header> <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation"> <div class="container"> <a class="navbar-brand title font-weight-lighter" href="/"> Nobu Dev Journal </a> <button class="navbar-toggler collapsed navbar-toggler-main" type="button" data-nav-toggle="navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> <span class="sr-only">Toggle navigation</span> <span class="icon-bar top-bar"></span> <span class="icon-bar middle-bar"></span> <span class="icon-bar bottom-bar"></span> </button> <div class="collapse navbar-collapse navbar-collapse-main" id="navbarNav"> <ul class="navbar-nav navbar-menu-list flex-nowrap"> <li class="nav-item "> <a class="nav-link" href="/">about </a> </li> <li class="nav-item "> <a class="nav-link" href="/projects/">projects </a> </li> <li class="nav-item active"> <a class="nav-link" href="/blog/">blog </a> </li> <li class="nav-item"> <button id="search-toggle" type="button" title="Search" aria-label="Open search"> <span class="nav-link">ctrl k <i class="fa-solid fa-magnifying-glass"></i></span> </button> </li> <li class="toggle-container"> <button id="light-toggle" type="button" title="Change theme" aria-label="Change color theme"> <i class="fa-half-sun-moon" id="light-toggle-system"></i> <i class="fa-solid fa-moon" id="light-toggle-dark"></i> <i class="fa-solid fa-sun" id="light-toggle-light"></i> </button> </li> </ul> </div> </div> </nav> <progress id="progress" value="0"> <div class="progress-container"> <span class="progress-bar"></span> </div> </progress> </header> <div class="container mt-5" role="main"> <div class="post"> <header class="post-header"> <h1 class="post-title">AWS Lightsail Java Server Setup Memo</h1> <p class="post-meta"> Created on January 16, 2024 </p> <p class="post-tags"> <a href="/blog/2024"> <i class="fa-solid fa-calendar fa-sm"></i> 2024 </a>   ·   <a href="/blog/tag/aws"> <i class="fa-solid fa-hashtag fa-sm"></i> aws</a>   <a href="/blog/tag/lightsail"> <i class="fa-solid fa-hashtag fa-sm"></i> lightsail</a>   ·   <a href="/blog/category/github"> <i class="fa-solid fa-tag fa-sm"></i> github</a> </p> </header> <article class="post-content"> <div id="markdown-content"> <p>This is a journal of my setup for a Java server on AWS, Lightsail in particular for my <a href="https://github.com/nobudev7/sumpdata" rel="external nofollow noopener" target="_blank">Sump Water Level Application</a> project.</p> <h2 id="applications">Applications</h2> <ul> <li>OS: Amazon Linux 2023</li> <li>Reverse Proxy: Nginx</li> <li>Application: Spring Boot jar - as Java server</li> <li>DB: MySQL</li> <li>Cache: Redis</li> <li>Streamlit - Presentation of the Sump Water Level data</li> </ul> <h2 id="why-lightsail">Why Lightsail</h2> <p>Because this server is for a purpose of showcasing the Spring Boot application, the load is very light, almost nil. One VPS suffices hosting Nginx, MySQL and Redis. For a real-world application, with somewhat mild workload, I’d use separate AWS services, such as RDS for MySQL and ElastiCache for Redis.</p> <h2 id="setup-steps">Setup Steps</h2> <h3 id="1-select-amazon-linux-2023-from-the-create-instance-page">1. Select Amazon Linux 2023 from the “Create Instance” page.</h3> <p>I didn’t choose Nginx instance because it’s a Bitnami package with PHP, Memcache, and other frills I don’t need. I chose 1GB RAM plan ($5/mo) to start with. Since it’ll connect with just 1 Raspberry Pi and the Web UI will be basically only for 1 user (me), this should be sufficient.</p> <p>Note: Below in screenshot, I started with 512MB instance. But I moved it to 1GB instance.</p> <p><img src="/images/2024-01-15/Lightsail-Instance.avif" alt="Lightsail Instance Selection"></p> <p><img src="/images/2024-01-15/Lightwail-Plans.png" alt="Instance Plan Selection"></p> <p>In moving the instance from 512MB to 1G, I created a snapshot of 512MB instance, and created a new instance from it. Somehow, the new instance doesn’t have a swap file (probably because the memory size is different), I created it manually.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nb">dd </span><span class="k">if</span><span class="o">=</span>/dev/zero <span class="nv">of</span><span class="o">=</span>/swapfile <span class="nv">bs</span><span class="o">=</span>1M <span class="nv">count</span><span class="o">=</span>1024
+ <span class="nb">chmod </span>600 /swapfile
+ mkswap /swapfile
+ swapon /swapfile
+ swapon <span class="nt">-s</span>
+ free
+</code></pre></div></div> <p>Then, edited <code class="language-plaintext highlighter-rouge">/etc/fstab</code> and added the line on the bottom so that swap file will be used after reboot.</p> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/swapfile swap swap defaults 0 0
+</code></pre></div></div> <h3 id="2-set-up-the-basics">2. Set up the basics</h3> <ul> <li>Attach Static IP</li> <li>Add SSH public key from my laptop</li> <li>Give a host name to the IP locally (/etc/hosts) - I named it <code class="language-plaintext highlighter-rouge">sumpserver</code>. <div class="language-bash highlighter-rouge"> <div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>ssh ec2-user@sumpserver   
+The authenticity of host <span class="s1">'sumpserver (xx.xx.xx.xx)'</span> can<span class="s1">'t be established.
+ED25519 key fingerprint is SHA256:abdcABCD1234...
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '</span>sumpserver<span class="s1">' (ED25519) to the list of known hosts.
+ ,     #_
+ ~\_  ####_        Amazon Linux 2023
+~~  \_#####\
+~~     \###|
+~~       \#/ ___   https://aws.amazon.com/linux/amazon-linux-2023
+ ~~       V~'</span> <span class="s1">'-&gt;
+  ~~~         /
+    ~~._.   _/
+       _/ _/
+     _/m/'</span>
+<span class="o">[</span>ec2-user@ip-xx-xx-xx-xxx ~]
+</code></pre></div> </div> </li> <li>Set the time zone. Add below in <code class="language-plaintext highlighter-rouge">.bash_profile</code> <div class="language-bash highlighter-rouge"> <div class="highlight"><pre class="highlight"><code><span class="nv">TZ</span><span class="o">=</span><span class="s1">'America/New_York'</span><span class="p">;</span> <span class="nb">export </span>TZ
+</code></pre></div> </div> </li> <li>Edit prompt <div class="language-bash highlighter-rouge"> <div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">PS1</span><span class="o">=</span><span class="s1">'\[\e[1;106m\]\u \W\[\e[m\] $ '</span>
+</code></pre></div> </div> </li> </ul> <h3 id="3-install-mysql">3. Install MySQL</h3> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>su
+dnf upgrade
+dnf localinstall <span class="nt">-y</span> https://dev.mysql.com/get/mysql80-community-release-el9-1.noarch.rpm
+dnf <span class="nb">install</span> <span class="nt">-y</span> mysql mysql-server mysql-community-client
+systemctl start mysqld.service
+systemctl status mysqld.service
+systemctl <span class="nb">enable </span>mysqld.service
+</code></pre></div></div> <p>Check root temporary password</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">grep</span> <span class="s1">'temporary password'</span> /var/log/mysqld.log
+</code></pre></div></div> <p>Login to MySQL</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mysql <span class="nt">-u</span> root <span class="nt">-p</span>
+</code></pre></div></div> <p>Create user and database</p> <div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">ALTER</span> <span class="k">USER</span> <span class="s1">'root'</span><span class="o">@</span><span class="s1">'localhost'</span> <span class="n">IDENTIFIED</span> <span class="k">BY</span> <span class="s1">'&lt;myrootpassword_here&gt;'</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">USER</span> <span class="s1">'sumpadmin'</span><span class="o">@</span><span class="s1">'%'</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">'&lt;sumpserver_user_password&gt;'</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">DATABASE</span> <span class="n">sumpdata</span><span class="p">;</span>
+<span class="k">GRANT</span> <span class="k">ALL</span> <span class="k">PRIVILEGES</span> <span class="k">ON</span> <span class="n">sumpdata</span><span class="p">.</span><span class="o">*</span> <span class="k">TO</span> <span class="s1">'sumpadmin'</span><span class="o">@</span><span class="s1">'%'</span><span class="p">;</span>
+</code></pre></div></div> <h3 id="4-install-nginx">4. Install Nginx</h3> <p>Installation of Nginx itself is straightforward.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>su
+dnf <span class="nt">-y</span> update
+dnf list <span class="nt">--available</span> nginx
+dnf <span class="nt">-y</span> <span class="nb">install </span>nginx
+nginx <span class="nt">-v</span>
+systemctl start nginx.service
+systemctl status nginx.service
+systemctl <span class="nb">enable </span>nginx.service
+curl http://localhost
+</code></pre></div></div> <p>Point your browser to the public IP to check it’s accessible from the internet.</p> <p><img src="/images/2024-01-15/welcome2nginx.png" alt="Nginx on Browser"></p> <h4 id="lets-encrypt-certificate">Let’s Encrypt Certificate</h4> <p>At this point, it only supports non-secure HTTP only. For HTTPS, I did the following.</p> <p><strong>Obtain a domain and associate with AWS IP.</strong> <img src="/images/2024-01-15/DomainToIp.png" alt="Domain to IP"></p> <p><strong>Install Certbot</strong> Certbot is a CLI that helps to obtain and maintain <a href="https://letsencrypt.org" rel="external nofollow noopener" target="_blank">Let’s Encrypt</a> cert.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>su
+dnf <span class="nb">install </span>certbot python3-certbot-nginx <span class="nt">-y</span>
+certbot <span class="nt">--version</span>
+</code></pre></div></div> <p>Before asking the <code class="language-plaintext highlighter-rouge">certbot</code> to obtain a SSL cert, configure Nginx server setting for the domain, so that <code class="language-plaintext highlighter-rouge">certbot</code> can edit the config for the matching domain.</p> <p><code class="language-plaintext highlighter-rouge">/etc/nginx/conf.d/sumpdata.conf</code></p> <div class="language-conf highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">server</span> {
+    <span class="n">listen</span>       <span class="m">80</span>;
+    <span class="n">listen</span>  [::]:<span class="m">80</span>;
+    <span class="n">server_name</span>  <span class="n">sumpdata</span>.<span class="n">nobudev7</span>.<span class="n">com</span>;
+
+
+    <span class="n">location</span> / {
+        <span class="n">root</span>   /<span class="n">usr</span>/<span class="n">share</span>/<span class="n">nginx</span>/<span class="n">html</span>;
+        <span class="n">index</span>  <span class="n">index</span>.<span class="n">html</span> <span class="n">index</span>.<span class="n">htm</span>;
+    }
+}
+</code></pre></div></div> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Test the conf file</span>
+nginx <span class="nt">-t</span>
+<span class="c"># Reload the conf</span>
+nginx <span class="nt">-s</span> reload
+</code></pre></div></div> <p><strong>Run Certbot</strong> Now, run <code class="language-plaintext highlighter-rouge">certbot</code> to obtain an SSL cert for the domain.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>certbot <span class="nt">--nginx</span> <span class="nt">-d</span> sumpdata.nobudev7.com
+</code></pre></div></div> <p>After successfully obtained and installed the cert to Nginx configuration, the above created <code class="language-plaintext highlighter-rouge">sumpdata.conf</code> was edited by Certbot as follows.</p> <div class="language-conf highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">server</span> {
+    <span class="n">server_name</span>  <span class="n">sumpdata</span>.<span class="n">nobudev7</span>.<span class="n">com</span>;
+
+
+    <span class="n">location</span> / {
+        <span class="n">root</span>   /<span class="n">usr</span>/<span class="n">share</span>/<span class="n">nginx</span>/<span class="n">html</span>;
+        <span class="n">index</span>  <span class="n">index</span>.<span class="n">html</span> <span class="n">index</span>.<span class="n">htm</span>;
+    }
+
+    <span class="n">listen</span> [::]:<span class="m">443</span> <span class="n">ssl</span> <span class="n">ipv6only</span>=<span class="n">on</span>; <span class="c"># managed by Certbot
+</span>    <span class="n">listen</span> <span class="m">443</span> <span class="n">ssl</span>; <span class="c"># managed by Certbot
+</span>    <span class="n">ssl_certificate</span> /<span class="n">etc</span>/<span class="n">letsencrypt</span>/<span class="n">live</span>/<span class="n">sumpdata</span>.<span class="n">nobudev7</span>.<span class="n">com</span>/<span class="n">fullchain</span>.<span class="n">pem</span>; <span class="c"># managed by Certbot
+</span>    <span class="n">ssl_certificate_key</span> /<span class="n">etc</span>/<span class="n">letsencrypt</span>/<span class="n">live</span>/<span class="n">sumpdata</span>.<span class="n">nobudev7</span>.<span class="n">com</span>/<span class="n">privkey</span>.<span class="n">pem</span>; <span class="c"># managed by Certbot
+</span>    <span class="n">include</span> /<span class="n">etc</span>/<span class="n">letsencrypt</span>/<span class="n">options</span>-<span class="n">ssl</span>-<span class="n">nginx</span>.<span class="n">conf</span>; <span class="c"># managed by Certbot
+</span>    <span class="n">ssl_dhparam</span> /<span class="n">etc</span>/<span class="n">letsencrypt</span>/<span class="n">ssl</span>-<span class="n">dhparams</span>.<span class="n">pem</span>; <span class="c"># managed by Certbot
+</span>
+}
+<span class="n">server</span> {
+    <span class="n">if</span> ($<span class="n">host</span> = <span class="n">sumpdata</span>.<span class="n">nobudev7</span>.<span class="n">com</span>) {
+        <span class="n">return</span> <span class="m">301</span> <span class="n">https</span>://$<span class="n">host</span>$<span class="n">request_uri</span>;
+    } <span class="c"># managed by Certbot
+</span>
+
+    <span class="n">listen</span>       <span class="m">80</span>;
+    <span class="n">listen</span>  [::]:<span class="m">80</span>;
+    <span class="n">server_name</span>  <span class="n">sumpdata</span>.<span class="n">nobudev7</span>.<span class="n">com</span>;
+    <span class="n">return</span> <span class="m">404</span>; <span class="c"># managed by Certbot
+</span>
+
+}
+</code></pre></div></div> <p>Notice that Certbot made non-secure HTTP (port 80) to automatically redirect to HTTPS.</p> <p><strong>Configure Auto Renew</strong> During the above process, <code class="language-plaintext highlighter-rouge">certbot</code> output the following.</p> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Certbot has set up a scheduled task to automatically renew this certificate in the background.
+</code></pre></div></div> <p>However, checking timers revealed that nothing is set up for certbot.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>systemctl list-timers
+</code></pre></div></div> <p>After reading various posts, I figured that certbot timer name is <code class="language-plaintext highlighter-rouge">certbot-renew.timer</code> not <code class="language-plaintext highlighter-rouge">certbot.timer</code> as widely referenced. Even Certbot itself might have a bug in setting the timer. Below, I set up the timer manually.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Where is the certbot timer and service?</span>
+<span class="nb">ls</span> /lib/systemd/system/certbot<span class="k">*</span>
+/lib/systemd/system/certbot-renew.service
+/lib/systemd/system/certbot-renew.timer
+</code></pre></div></div> <p>Try to see if the service works, and check the status.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>systemctl start certbot-renew.service
+systemctl status certbot-renew.service
+</code></pre></div></div> <p>Output</p> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>○ certbot-renew.service - This service automatically renews any certbot certificates found
+     Loaded: loaded (/usr/lib/systemd/system/certbot-renew.service; static)
+     Active: inactive (dead) since Mon 2024-01-15 12:57:33 EST; 31s ago
+TriggeredBy: ○ certbot-renew.timer
+    Process: 69039 ExecStart=/usr/bin/certbot renew --noninteractive --no-random-sleep-on-renew $PRE_HOOK $POST_HOOK $RENEW_HOOK $DEPLOY_HOOK $CERTBOT_ARGS (code=exited, status=0/SUCCESS)
+   Main PID: 69039 (code=exited, status=0/SUCCESS)
+        CPU: 500ms
+
+Jan 15 12:57:33 ip-xx-xx-xx-xx.ec2.internal certbot[69039]: Processing /etc/letsencrypt/renewal/sumpdata.nobudev7.com.conf
+Jan 15 12:57:33 ip-xx-xx-xx-xx.ec2.internal certbot[69039]: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Jan 15 12:57:33 ip-xx-xx-xx-xx.ec2.internal certbot[69039]: Certificate not yet due for renewal
+Jan 15 12:57:33 ip-xx-xx-xx-xx.ec2.internal certbot[69039]: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Jan 15 12:57:33 ip-xx-xx-xx-xx.ec2.internal certbot[69039]: The following certificates are not due for renewal yet:
+Jan 15 12:57:33 ip-xx-xx-xx-xx.ec2.internal certbot[69039]:   /etc/letsencrypt/live/sumpdata.nobudev7.com/fullchain.pem expires on 2024-04-14 (skipped)
+Jan 15 12:57:33 ip-xx-xx-xx-xx.ec2.internal certbot[69039]: No renewals were attempted.
+Jan 15 12:57:33 ip-xx-xx-xx-xx.ec2.internal certbot[69039]: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Jan 15 12:57:33 ip-xx-xx-xx-xx.ec2.internal systemd[1]: certbot-renew.service: Deactivated successfully.
+Jan 15 12:57:33 ip-xx-xx-xx-xx.ec2.internal systemd[1]: Finished certbot-renew.service - This service automatically renews any certbot certificates found.
+</code></pre></div></div> <p>Start the timer</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>systemctl start certbot-renew.timer
+<span class="c"># Check if it's scheduled.</span>
+systemctl list-timers certbot-renew.timer
+<span class="c"># OUTPUT</span>
+NEXT                        LEFT     LAST PASSED UNIT                ACTIVATES
+Tue 2024-01-16 06:58:43 EST 16h left -    -      certbot-renew.timer certbot-renew.service
+</code></pre></div></div> <p>Note: Amazon Linux 2023 doesn’t come with <code class="language-plaintext highlighter-rouge">crontab</code>.</p> <h3 id="5-install-git">5. Install Git</h3> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>su
+dnf <span class="nb">install </span>git <span class="nt">-y</span>
+<span class="c"># exit to ec2-user</span>
+<span class="nb">exit
+</span>git <span class="nt">--version</span>
+</code></pre></div></div> <h3 id="6-install-redis">6. Install Redis</h3> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dnf list <span class="nt">--available</span> |grep redis
+<span class="c"># OUTPUT</span>
+redis6.x86_64         6.2.13-1.amzn2023.0.1    amazonlinux
+redis6-devel.x86_64   6.2.13-1.amzn2023.0.1    amazonlinux
+redis6-doc.noarch     6.2.13-1.amzn2023.0.1    amazonlinux
+
+dnf <span class="nb">install </span>redis6 <span class="nt">-y</span>
+systemctl start redis6
+systemctl status redis6
+systemctl <span class="nb">enable </span>redis6
+redis6-cli 
+<span class="c"># OUTPUT</span>
+127.0.0.1:6379&gt;
+</code></pre></div></div> <h3 id="7-install-java-runtime">7. Install Java (Runtime)</h3> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Check Java availability</span>
+dnf list <span class="nt">--available</span> java-21-amazon-corretto
+<span class="c"># Install</span>
+dnf <span class="nb">install </span>java-21-amazon-corretto <span class="nt">-y</span>
+java <span class="nt">--version</span>
+</code></pre></div></div> <h3 id="8-deploy-jar-file-from-git">8. Deploy Jar file from Git</h3> <p>The Git Action (discussed in <a href="https://dev.to/nobudev7/github-actions-for-jar-file-deployment-204" rel="external nofollow noopener" target="_blank">GitHub Actions for Jar file deployment</a>) build a jar file from the Java project. While the intention is to download it manually, I put all commands in a shell script.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+
+<span class="c"># Remove files named sumpdata*.jar</span>
+<span class="nb">rm</span> <span class="nt">-f</span> sumpdata<span class="k">*</span>.jar
+
+<span class="nv">latestjar</span><span class="o">=</span><span class="si">$(</span>curl <span class="se">\</span>
+    <span class="nt">-s</span> https://api.github.com/repos/nobudev7/sumpdata/actions/artifacts <span class="se">\</span>
+    | jq <span class="nt">-r</span> <span class="s1">'.artifacts | max_by(.created_at) | .archive_download_url'</span>
+<span class="si">)</span>
+
+<span class="nb">echo</span> <span class="s2">"Downloading </span><span class="nv">$latestjar</span><span class="s2">..."</span>
+
+curl <span class="nt">-L</span> <span class="nt">-o</span> artifact.zip<span class="se">\</span>
+  <span class="nt">-H</span> <span class="s2">"Accept: application/vnd.github+json"</span> <span class="se">\</span>
+  <span class="nt">-H</span> <span class="s2">"Authorization: Bearer &lt;github_token&gt;"</span> <span class="se">\</span>
+  <span class="nt">-H</span> <span class="s2">"X-GitHub-Api-Version: 2022-11-28"</span> <span class="s2">"</span><span class="nv">$latestjar</span><span class="s2">"</span>
+
+<span class="k">if</span> <span class="o">[</span> <span class="nv">$?</span> <span class="nt">-eq</span> 0 <span class="o">]</span><span class="p">;</span> <span class="k">then
+  </span>unzip artifact.zip
+  <span class="nb">rm </span>artifact.zip
+<span class="k">else
+  </span><span class="nb">echo</span> <span class="s2">"Downloading Jar failed: </span><span class="nv">$latestjar</span><span class="s2">"</span>
+<span class="k">fi</span>
+</code></pre></div></div> <h3 id="9-run-jar-application">9. Run Jar application</h3> <p>To test if the Jar application properly work, start it with proper variables. In my case, I have different MySQL user/pass than what’s in the <code class="language-plaintext highlighter-rouge">application.properties</code> file, I pass it via environment variables (can be <code class="language-plaintext highlighter-rouge">Dxxx=yyy</code> param as well).</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">SPRING_DATASOURCE_USERNAME</span><span class="o">=</span>&lt;mysql_user&gt; <span class="nv">SPRING_DATASOURCE_PASSWORD</span><span class="o">=</span>s&lt;mysql_pass&gt; java <span class="nt">-jar</span> sumpdata-0.2.0.jar 
+</code></pre></div></div> <p>Add an entry from the local instance for testing.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">-X</span> POST <span class="s1">'http://localhost:8080/devices/2/entries?measuredOn=2023-10-24T16:37:06&amp;value=12.2'</span> <span class="nt">-H</span> <span class="s1">'Content-Type: text/plain'</span>
+</code></pre></div></div> <p>Check the MySQL table.</p> <div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">mysql</span><span class="o">&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">data_entry</span><span class="p">;</span>
+<span class="o">+</span><span class="c1">----------+----------------------------+-------+</span>
+<span class="o">|</span> <span class="n">deviceid</span> <span class="o">|</span> <span class="n">measured_on</span>                <span class="o">|</span> <span class="n">value</span> <span class="o">|</span>
+<span class="o">+</span><span class="c1">----------+----------------------------+-------+</span>
+<span class="o">|</span>        <span class="mi">2</span> <span class="o">|</span> <span class="mi">2023</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">24</span> <span class="mi">16</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mi">06</span><span class="p">.</span><span class="mi">000000</span> <span class="o">|</span>   <span class="mi">122</span> <span class="o">|</span>
+<span class="o">+</span><span class="c1">----------+----------------------------+-------+</span>
+<span class="mi">1</span> <span class="k">row</span> <span class="k">in</span> <span class="k">set</span> <span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">00</span> <span class="n">sec</span><span class="p">)</span>
+</code></pre></div></div> <h3 id="9-run-a-jar-app-as-a-service">9. Run a Jar app as a service</h3> <p>It seems that the current way of setting up a service is to use systemctl edit <code class="language-plaintext highlighter-rouge">&lt;service_name&gt;</code>. However, if you run it the first time, on Amazon Linux 2023, it shows an error and suggests <code class="language-plaintext highlighter-rouge">--force</code> option.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># systemctl edit sumpdata</span>
+No files found <span class="k">for </span>sumpdata.service.
+Run <span class="s1">'systemctl edit --force --full sumpdata.service'</span> to create a new unit.
+</code></pre></div></div> <p>Running it as suggested, an editor (nano) shows up. This will become the service file.</p> <div class="language-conf highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[<span class="n">Unit</span>]
+<span class="n">Description</span>=<span class="n">Sump</span> <span class="n">Data</span> <span class="n">service</span>
+<span class="n">After</span>=<span class="n">syslog</span>.<span class="n">target</span> <span class="n">network</span>.<span class="n">target</span>
+
+[<span class="n">Service</span>]
+<span class="n">SuccessExitStatus</span>=<span class="m">143</span>
+
+<span class="n">User</span>=<span class="n">ec2</span>-<span class="n">user</span>
+<span class="n">Group</span>=<span class="n">ec2</span>-<span class="n">user</span>
+
+<span class="n">Type</span>=<span class="n">simple</span>
+
+<span class="n">WorkingDirectory</span>=/<span class="n">home</span>/<span class="n">ec2</span>-<span class="n">user</span>/<span class="n">sumpdata</span>
+<span class="n">ExecStart</span>=/<span class="n">usr</span>/<span class="n">bin</span>/<span class="n">java</span> -<span class="n">jar</span> <span class="n">sumpdata</span>.<span class="n">jar</span>
+<span class="n">ExecStop</span>=/<span class="n">bin</span>/<span class="n">kill</span> -<span class="m">15</span> $<span class="n">MAINPID</span>
+
+[<span class="n">Install</span>]
+<span class="n">WantedBy</span>=<span class="n">multi</span>-<span class="n">user</span>.<span class="n">target</span>
+</code></pre></div></div> <p>Save the file, but don’t change the file name, as the file name is temporary and the <code class="language-plaintext highlighter-rouge">systemctl</code> will properly move it to <code class="language-plaintext highlighter-rouge">/etc/systemd/system</code>.</p> <p>Note that, the above service file doesn’t have any Environment values. That is to be written under <code class="language-plaintext highlighter-rouge">override.conf</code>, by <code class="language-plaintext highlighter-rouge">systemctl edit &lt;service_name&gt;</code>.</p> <p>The same (nano) editor opens up, and between comment lines, add the env variables.</p> <div class="language-conf highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">### Editing /etc/systemd/system/sumpdata.service.d/override.conf
+### Anything between here and the comment below will become the new contents of the file
+</span>
+[<span class="n">Service</span>]
+<span class="n">Environment</span>=<span class="s2">"SPRING_DATASOURCE_USERNAME=dbuser"</span>
+<span class="n">Environment</span>=<span class="s2">"SPRING_DATASOURCE_PASSWORD=dbpassword"</span>
+
+<span class="c">### Lines below this comment will be discarded
+</span>
+<span class="c">### /etc/systemd/system/sumpdata.service
+# [Unit]
+# Description=Samp Data service
+# After=syslog.target network.target
+</span>...
+</code></pre></div></div> <p>After saving the override, a conf file is created.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>ll /etc/systemd/system/sumpdata.service.d
+total 4
+<span class="nt">-rw-r--r--</span><span class="nb">.</span> 1 root root 125 Jan 20 10:36 override.conf
+</code></pre></div></div> <p>Register and start the service, and check status.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>systemctl daemon-reload
+<span class="nv">$ </span>systemctl start sumpdata.service
+<span class="nv">$ </span>systemctl status sumpdata.service
+● sumpdata.service - Samp Data service
+     Loaded: loaded <span class="o">(</span>/etc/systemd/system/sumpdata.service<span class="p">;</span> disabled<span class="p">;</span> preset: disabled<span class="o">)</span>
+    Drop-In: /etc/systemd/system/sumpdata.service.d
+             └─override.conf
+     Active: active <span class="o">(</span>running<span class="o">)</span> since Sat 2024-01-20 10:21:51 EST<span class="p">;</span> 1s ago
+   Main PID: 129986 <span class="o">(</span>java<span class="o">)</span>
+      Tasks: 13 <span class="o">(</span>limit: 1061<span class="o">)</span>
+     Memory: 69.9M
+        CPU: 2.674s
+     CGroup: /system.slice/sumpdata.service
+             └─129986 /usr/bin/java <span class="nt">-jar</span> sumpdata.jar
+</code></pre></div></div> <p>Make the service start automatically.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>systemctl <span class="nb">enable </span>sumpdata.service
+Created symlink /etc/systemd/system/multi-user.target.wants/sumpdata.service → /etc/systemd/system/sumpdata.service.
+</code></pre></div></div> <p>After the service started, to see the jar output, use <code class="language-plaintext highlighter-rouge">journalctl</code></p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">sudo </span>journalctl <span class="nt">-u</span> sumpdata.service
+</code></pre></div></div> <h3 id="10-install-streamlit-and-clone-sumpchart">10. Install Streamlit and clone SumpChart</h3> <p>To set up the Streamlit application, first, clone SumpChart repo.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/ntamagawa/sumpchart.git
+</code></pre></div></div> <p>The SumpChart app will be run under a Python environment, so let’s create a virtual env for that.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python3 <span class="nt">-m</span> venv streamlitenv
+<span class="nb">cd </span>sumpchart/
+<span class="nb">source</span> ~/streamlitenv/bin/activate
+pip3 <span class="nt">-V</span>
+<span class="c"># Output</span>
+pip 21.3.1 from /home/ec2-user/streamlitenv/lib64/python3.9/site-packages/pip <span class="o">(</span>python 3.9<span class="o">)</span>
+
+<span class="c"># Update pip</span>
+python3 <span class="nt">-m</span> pip <span class="nb">install</span> <span class="nt">--upgrade</span> pip
+
+pip3 <span class="nt">-V</span>
+<span class="c"># Output - now pip is the latest version</span>
+pip 23.3.2 from /home/ec2-user/streamlitenv/lib64/python3.9/site-packages/pip <span class="o">(</span>python 3.9<span class="o">)</span>
+
+</code></pre></div></div> <p>Using the pip3, install Streamlit and all dependencies per <code class="language-plaintext highlighter-rouge">requirements.txt</code> specifies.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip3 <span class="nb">install</span> <span class="nt">-r</span> requirements.txt 
+</code></pre></div></div> <p>Run the application as a test.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>streamlit run sumpchartapp.py 
+
+Collecting usage statistics. To deactivate, <span class="nb">set </span>browser.gatherUsageStats to False.
+
+
+  You can now view your Streamlit app <span class="k">in </span>your browser.
+
+  Network URL: http://172.xx.xx.xx:8501 <span class="c"># AWS internal network</span>
+  External URL: http://52.xx.xx.xx:8501 <span class="c"># External network</span>
+
+</code></pre></div></div> <p>Note that, since the instance is an AWS server behind Lightsail default firewall, the port 8501 is not accessible at this point.</p> <p>For testing purpose, connect via SSH from another terminal, and check to see at least the streamlit app is running.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl http://172.xx.xx.xx.xx:8501
+&lt;<span class="o">!</span>doctype html&gt;&lt;html <span class="nv">lang</span><span class="o">=</span><span class="s2">"en"</span><span class="o">&gt;</span>&lt;<span class="nb">head</span><span class="o">&gt;</span>&lt;meta <span class="nv">charset</span><span class="o">=</span><span class="s2">"UTF-8"</span>/&gt;&lt;meta <span class="nv">name</span><span class="o">=</span><span class="s2">"viewport"</span> <span class="nv">content</span><span class="o">=</span><span class="s2">"width=device-width,initial-scale=1,shrink-to-fit=no"</span>/&gt;&lt;<span class="nb">link </span><span class="nv">rel</span><span class="o">=</span><span class="s2">"shortcut icon"</span> <span class="nv">href</span><span class="o">=</span><span class="s2">"./favicon.png"</span>/&gt;&lt;<span class="nb">link </span><span class="nv">rel</span><span class="o">=</span><span class="s2">"preload"</span> <span class="nv">href</span><span class="o">=</span><span class="s2">"./static/media/SourceSansPro-Regular.0d69e5ff5e92ac64a0c9.woff2"</span> <span class="nv">as</span><span class="o">=</span><span class="s2">"font"</span> <span class="nb">type</span><span class="o">=</span><span class="s2">"font/woff2"</span> crossorigin&gt;&lt;<span class="nb">link </span><span class="nv">rel</span><span class="o">=</span><span class="s2">"preload"</span> <span class="nv">href</span><span class="o">=</span><span class="s2">"./static/media/SourceSerifPro-SemiBold.5c1d378dd5990ef334ca.woff2"</span> <span class="nv">as</span><span class="o">=</span><span class="s2">"font"</span> <span class="nb">type</span><span class="o">=</span><span class="s2">"font/woff2"</span> crossorigin&gt;&lt;<span class="nb">link </span><span class="nv">rel</span><span class="o">=</span><span class="s2">"preload"</span> <span class="nv">href</span><span class="o">=</span><span class="s2">"./static/media/SourceSansPro-Bold.118dea98980e20a81ced.woff2"</span> <span class="nv">as</span><span class="o">=</span><span class="s2">"font"</span> <span class="nb">type</span><span class="o">=</span><span class="s2">"font/woff2"</span> crossorigin&gt;&lt;title&gt;Streamlit&lt;/title&gt;&lt;script&gt;window.prerenderReady<span class="o">=!</span>1&lt;/script&gt;&lt;script <span class="nv">defer</span><span class="o">=</span><span class="s2">"defer"</span> <span class="nv">src</span><span class="o">=</span><span class="s2">"./static/js/main.3afeb7b0.js"</span><span class="o">&gt;</span>&lt;/script&gt;&lt;<span class="nb">link </span><span class="nv">href</span><span class="o">=</span><span class="s2">"./static/css/main.77d1c464.css"</span> <span class="nv">rel</span><span class="o">=</span><span class="s2">"stylesheet"</span><span class="o">&gt;</span>&lt;/head&gt;&lt;body&gt;&lt;noscript&gt;You need to <span class="nb">enable </span>JavaScript to run this app.&lt;/noscript&gt;&lt;div <span class="nb">id</span><span class="o">=</span><span class="s2">"root"</span><span class="o">&gt;</span>&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;
+</code></pre></div></div> <p>To make streamlit app running as a service, put necessary commands in a script.</p> <p>sumpchart.sh</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+
+<span class="nb">cd</span> /home/ec2-user/sumpchart
+<span class="nb">source</span> /home/ec2-user/streamlitenv/bin/activate
+<span class="nb">echo</span> <span class="s2">"venv=</span><span class="nv">$VIRTUAL_ENV</span><span class="s2">"</span>
+streamlit run sumpchartapp.py
+
+</code></pre></div></div> <p>Make the script executable.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">chmod</span> +x sumpchart.sh
+</code></pre></div></div> <h3 id="11-configure-sumpchart-app-to-run-as-a-system-service">11. Configure SumpChart app to run as a system service</h3> <p>Like running the Jar app as a service, let’s set up the SumpChart Streamlit app to run as a service.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>su
+
+</code></pre></div></div> <div class="language-conf highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[<span class="n">Unit</span>]
+<span class="n">Description</span>=<span class="n">Sump</span> <span class="n">Chart</span> <span class="n">service</span>
+<span class="n">After</span>=<span class="n">syslog</span>.<span class="n">target</span> <span class="n">network</span>.<span class="n">target</span>
+
+[<span class="n">Service</span>]
+<span class="n">User</span>=<span class="n">ec2</span>-<span class="n">user</span>
+<span class="n">Group</span>=<span class="n">ec2</span>-<span class="n">user</span>
+
+<span class="n">Type</span>=<span class="n">simple</span>
+
+<span class="n">WorkingDirectory</span>=/<span class="n">home</span>/<span class="n">ec2</span>-<span class="n">user</span>
+<span class="n">ExecStart</span>=/<span class="n">home</span>/<span class="n">ec2</span>-<span class="n">user</span>/<span class="n">sumpchart</span>.<span class="n">sh</span>
+<span class="n">KillSignal</span>=<span class="n">SIGINT</span>
+
+[<span class="n">Install</span>]
+<span class="n">WantedBy</span>=<span class="n">multi</span>-<span class="n">user</span>.<span class="n">target</span>
+</code></pre></div></div> <p>Reload systemd, start, check status of the new service.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>systemctl daemon-reload
+systemctl start sumpchart.service
+systemctl status sumpchart.service
+<span class="c"># Output</span>
+● sumpchart.service - Sump Chart service
+     Loaded: loaded <span class="o">(</span>/etc/systemd/system/sumpchart.service<span class="p">;</span> disabled<span class="p">;</span> preset: disabled<span class="o">)</span>
+     Active: activating <span class="o">(</span>start<span class="o">)</span> since Sat 2024-01-27 11:20:13 EST<span class="p">;</span> 48s ago
+Cntrl PID: 412050 <span class="o">(</span>sumpchart.sh<span class="o">)</span>
+      Tasks: 6 <span class="o">(</span>limit: 1061<span class="o">)</span>
+     Memory: 69.6M
+        CPU: 1.021s
+     CGroup: /system.slice/sumpchart.service
+             ├─412050 /bin/bash /home/ec2-user/sumpchart.sh
+             └─412051 /home/ec2-user/streamlitenv/bin/python3 /home/ec2-user/streamlitenv/bin/streamlit run sumpchartapp.py
+
+Jan 27 11:20:13 ip-172-xx-xx-xx.ec2.internal systemd[1]: Starting sumpchart.service - Sump Chart service...
+Jan 27 11:20:13 ip-172-xx-xx-xx.ec2.internal sumpchart.sh[412050]: <span class="nv">venv</span><span class="o">=</span>/home/ec2-user/streamlitenv
+Jan 27 11:20:14 ip-172-xx-xx-xx.ec2.internal sumpchart.sh[412051]: Collecting usage statistics. To deactivate, <span class="nb">set </span>browser.gatherUsageStats to False.
+Jan 27 11:20:14 ip-172-xx-xx-xx.ec2.internal sumpchart.sh[412051]:   You can now view your Streamlit app <span class="k">in </span>your browser.
+Jan 27 11:20:14 ip-172-xx-xx-xx.ec2.internal sumpchart.sh[412051]:   Network URL: http://172.xx.xx.xx:8501
+Jan 27 11:20:14 ip-172-xx-xx-xx.ec2.internal sumpchart.sh[412051]:   External URL: http://52.xx.xx.xx:8501
+
+</code></pre></div></div> <p>Make the service start automatically.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>systemctl <span class="nb">enable </span>sumpchart.service
+<span class="c"># Output</span>
+Created symlink /etc/systemd/system/multi-user.target.wants/sumpchart.service → /etc/systemd/system/sumpchart.service.
+</code></pre></div></div> <h3 id="12-configure-nginx-to-access-applications">12. Configure Nginx to access applications</h3> <p>Now that there are 2 applications that interact with users and devices are running, they need to be allowed to access through Nginx server.</p> <ul> <li>Streamlit for visualization that is the root of the subdomain, i.e. <code class="language-plaintext highlighter-rouge">sumpdata.nobudev7.com/</code> </li> <li>Java server application as a <code class="language-plaintext highlighter-rouge">sumpdata</code> service on <code class="language-plaintext highlighter-rouge">/devices</code> endpoint</li> <li>Along with the Java server, Swagger uses 2 endpoints, <code class="language-plaintext highlighter-rouge">/swagger-ui</code> and <code class="language-plaintext highlighter-rouge">/v3</code>.</li> </ul> <p>In configuring those endpoints, I want <code class="language-plaintext highlighter-rouge">/devices</code> endpoint, which is the REST API endpoint, to have limited access from my own devices. The easiest way is to limit the IP address(es) that can access to the endpoint.</p> <p>/etc/nginx/conf.d/sumpdata.conf</p> <div class="language-nginx highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">server</span> <span class="p">{</span>
+    <span class="kn">server_name</span>  <span class="s">sumpdata.nobudev7.com</span><span class="p">;</span>
+
+    <span class="c1"># Streamlit</span>
+    <span class="kn">location</span> <span class="n">/</span> <span class="p">{</span>
+	<span class="kn">proxy_pass</span> <span class="s">http://localhost:8501</span><span class="p">;</span>
+	<span class="kn">proxy_redirect</span> <span class="no">off</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Streamlit WebSocket folder</span>
+    <span class="kn">location</span> <span class="n">/_stcore</span> <span class="p">{</span>
+        <span class="kn">proxy_pass</span> <span class="s">http://localhost:8501/_stcore</span><span class="p">;</span>
+        <span class="kn">proxy_http_version</span> <span class="mf">1.1</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">Upgrade</span> <span class="nv">$http_upgrade</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">Connection</span> <span class="s">"Upgrade"</span><span class="p">;</span>
+        <span class="kn">proxy_set_header</span> <span class="s">Host</span> <span class="nv">$host</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Swagger is accessed via /swagger url. </span>
+    <span class="kn">location</span> <span class="n">/swagger</span> <span class="p">{</span>
+        <span class="kn">proxy_pass</span> <span class="s">http://localhost:8080/swagger-ui</span><span class="p">;</span>
+        <span class="kn">index</span> <span class="s">index.html</span><span class="p">;</span>
+        <span class="kn">proxy_redirect</span> <span class="no">off</span><span class="p">;</span>
+    <span class="p">}</span>
+    
+    <span class="c1"># This is also for Swagger that requires /v3/... url</span>
+    <span class="kn">location</span> <span class="n">/v3</span> <span class="p">{</span>
+        <span class="kn">proxy_pass</span> <span class="s">http://localhost:8080/v3</span><span class="p">;</span>
+    	<span class="kn">proxy_redirect</span> <span class="no">off</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1"># This is the sump data endpoint.</span>
+    <span class="kn">location</span> <span class="n">/devices</span> <span class="p">{</span>
+        <span class="kn">proxy_pass</span> <span class="s">http://localhost:8080/devices</span><span class="p">;</span>
+	    <span class="kn">proxy_redirect</span> <span class="no">off</span><span class="p">;</span>
+        <span class="kn">allow</span> <span class="mi">123</span><span class="s">.xxx.xxx.xxx</span><span class="p">;</span> <span class="c1"># This is where the device resides</span>
+        <span class="kn">deny</span> <span class="s">all</span><span class="p">;</span>
+
+    <span class="p">}</span>
+</code></pre></div></div> <p>Test the config, reload, and Nginx should be routing all endpoints correctly.</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>nginx <span class="nt">-t</span>
+nginx <span class="nt">-s</span> reload
+</code></pre></div></div> </div> </article> <br> <hr> <br> <h2 class="text-3xl font-semibold mb-4 mt-12">Enjoy Reading This Article?</h2> <p class="mb-2">Here are some more articles you might like to read next:</p> <ul class="list-disc pl-7 my-3 space-y-2 marker:text-[var(--global-theme-color)]"> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2024/Docker-Nginx-Demo/">Docker Nginx Demo</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/AWS-Serverless-Sump-Chart/">Aws Serverless Sump Chart</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/PiLambdaChart-Building-a-Serverless-IoT-Dashboard-with-Raspberry-Pi-and-AWS/">PiLambdaChart: Building a Serverless IoT Dashboard with Raspberry Pi and AWS</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Deploying-the-Java-Chart-Generator-to-AWS-Lambda-on-Schedule/">Deploying The Java Chart Generator To Aws Lambda On Schedule</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Exploring-Multi-Cloud-Deployments-Migrating-from-AWS-Lightsail-to-Oracle-Cloud-OCI/">Exploring Multi-Cloud Deployments: Migrating from AWS Lightsail to Oracle Cloud (OCI)</a> </li> </ul> </div> </div> <footer class="fixed-bottom" role="contentinfo"> <div class="container mt-0"> © Copyright 2026 Nobu . Powered by <a href="https://jekyllrb.com/" target="_blank" rel="external nofollow noopener">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" rel="external nofollow noopener" target="_blank">al-folio</a> theme. </div> </footer> <script>
+  window.alFolio = {
+    compatBootstrap: false
+  };
+</script> <script src="/assets/js/nav-toggle.js?v=141bd79a73ebc0f0b6ea58e440ae79fc"></script> <script defer src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/imagesloaded@5.0.0/imagesloaded.pkgd.min.js" integrity="sha256-htrLFfZJ6v5udOG+3kNLINIKh2gvoKqwEhHYfTTMICc=" crossorigin="anonymous"></script> <script defer src="/assets/js/masonry.js?v=e49affc7bd2646f6acdad1dbe02c2359" type="text/javascript"></script> <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script> <script src="/assets/al_math/js/mathjax-setup.js"></script> <script src="/assets/js/tooltips-setup.js?v=fe487e99db6c43751e6e7bdb2d6a0611"></script> <script src="/assets/js/no_defer.js?v=53b1b1a645525975c963ce8bf8bfefcf"></script> <script defer src="/assets/js/common.js?v=87baac90f765f2f3362dcf6aaf312a8a"></script> <script defer src="/assets/js/copy_code.js?v=c8a01c11a92744d44b093fc3bda915df" type="text/javascript"></script> <script defer src="/assets/js/jupyter_new_tab.js?v=896d254890d9b47f0281f63bfccf0dee"></script> <script async src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script> <script async src="https://badge.dimensions.ai/badge.js"></script> <script defer src="https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js" integrity="sha256-ZgMyDAIYDYGxbcpJcfUnYwNevG/xi9OHKaR/8GK+jWc=" crossorigin="anonymous"></script> <script defer src="/assets/al_img_tools/js/zoom.js"></script> <script defer src="/assets/js/progress-bar.js?v=499464c5c63ced6cf7ad62509f1e2610" type="text/javascript"></script> <script src="https://cdn.jsdelivr.net/npm/vanilla-back-to-top@7.2.1/dist/vanilla-back-to-top.min.js" integrity="sha256-uMJJ3EoTyfRBoTbR+lrfu1uRQ87RZG8AR3cVNuQVeFg=" crossorigin="anonymous"></script> <script>
+    addBackToTop();
+  </script> <script type="module" src="/assets/al_search/js/search/ninja-keys.min.js"></script> <ninja-keys hidebreadcrumbs noautoloadmdicons placeholder="Type to start searching"></ninja-keys> <script src="/assets/al_search/js/search-setup.js"></script> <script>
+// get the ninja-keys element
+const ninja = document.querySelector('ninja-keys');
+
+// add the home and posts menu items
+ninja.data = [{
+    id: "nav-about",
+    title: "about",
+    section: "Navigation",
+    handler: () => {
+      window.location.href = "/";
+    },
+  },{id: "nav-projects",
+          title: "projects",
+          description: "Open-source projects, cloud infrastructure, and IoT telemetry systems.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/projects/";
+          },
+        },{id: "nav-blog",
+          title: "blog",
+          description: "",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/blog/";
+          },
+        },{id: "post-exploring-multi-cloud-deployments-migrating-from-aws-lightsail-to-oracle-cloud-oci",
+        
+          title: "Exploring Multi-Cloud Deployments: Migrating from AWS Lightsail to Oracle Cloud (OCI)",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Exploring-Multi-Cloud-Deployments-Migrating-from-AWS-Lightsail-to-Oracle-Cloud-OCI/";
+          
+        },
+      },{id: "post-building-and-publishing-c4002-python-a-24ghz-mmwave-radar-driver-for-raspberry-pi",
+        
+          title: "Building and Publishing c4002-python: A 24GHz mmWave Radar Driver for Raspberry Pi",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Building-and-Publishing-c4002-python-mmWave-Radar-Driver/";
+          
+        },
+      },{id: "post-pilambdachart-building-a-serverless-iot-dashboard-with-raspberry-pi-and-aws",
+        
+          title: "PiLambdaChart: Building a Serverless IoT Dashboard with Raspberry Pi and AWS",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/PiLambdaChart-Building-a-Serverless-IoT-Dashboard-with-Raspberry-Pi-and-AWS/";
+          
+        },
+      },{id: "post-setting-up-raspberry-pi-with-an-ultrasonic-sensor",
+        
+          title: "Setting up Raspberry Pi with an Ultrasonic Sensor",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Setting-Up-Pi-with-Ultrasonic-Sensor/";
+          
+        },
+      },{id: "post-using-an-ir-sensor-for-precise-distance-measurement-on-raspberry-pi",
+        
+          title: "Using an IR Sensor for Precise Distance Measurement on Raspberry Pi",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/using-ir-sensor-for-distance-measurement/";
+          
+        },
+      },{id: "post-deploying-the-java-chart-generator-to-aws-lambda-on-schedule",
+        
+          title: "Deploying The Java Chart Generator To Aws Lambda On Schedule",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Deploying-the-Java-Chart-Generator-to-AWS-Lambda-on-Schedule/";
+          
+        },
+      },{id: "post-migrating-to-serverless-raspberry-pi-to-dynamodb-plus-lambda-function-for-chart-generation",
+        
+          title: "Migrating To Serverless: Raspberry Pi To Dynamodb Plus Lambda Function For Chart Generation...",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Migrating-to-Serverless-Raspberry-Pi-to-DynamoDB-plus-Lambda-Function-for-Chart-Generation/";
+          
+        },
+      },{id: "post-securing-serverless-site-migrating-from-s3-hosting-to-amazon-cloudfront-https",
+        
+          title: "Securing Serverless Site   Migrating From S3 Hosting To Amazon Cloudfront Https",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Securing-Serverless-Site-Migrating-from-S3-Hosting-to-Amazon-CloudFront-HTTPS/";
+          
+        },
+      },{id: "post-aws-serverless-sump-chart",
+        
+          title: "Aws Serverless Sump Chart",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/AWS-Serverless-Sump-Chart/";
+          
+        },
+      },{id: "post-restricting-access-with-http-basic-authentication",
+        
+          title: "Restricting Access With Http Basic Authentication",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/Restricting-Access-with-HTTP-Basic-Authentication/";
+          
+        },
+      },{id: "post-vs-code-snippet-in-front-matter",
+        
+          title: "Vs Code Snippet In Front Matter",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/VS-Code-Snippet-In-Front-Matter/";
+          
+        },
+      },{id: "post-set-up-jekyll-locally-on-mac",
+        
+          title: "Set up Jekyll Locally on Mac",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/Set-up-Jekyll-locally-on-Mac/";
+          
+        },
+      },{id: "post-aws-lightsail-java-server-setup-memo",
+        
+          title: "AWS Lightsail Java Server Setup Memo",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/AWS-Lightsail/";
+          
+        },
+      },{id: "post-github-actions-for-jar-file-deployment",
+        
+          title: "GitHub Actions for Jar file deployment",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/GitHubActions/";
+          
+        },
+      },{id: "post-docker-nginx-demo",
+        
+          title: "Docker Nginx Demo",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/Docker-Nginx-Demo/";
+          
+        },
+      },{id: "post-my-java-memo",
+        
+          title: "My Java Memo",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/My-Java-Memo/";
+          
+        },
+      },{id: "post-installing-streamlit-on-mac",
+        
+          title: "Installing Streamlit On Mac",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/Installing-Streamlit-on-Mac/";
+          
+        },
+      },{id: "post-spring-boot-multiple-primary-keys-via-jpa",
+        
+          title: "Spring Boot: Multiple Primary Keys via JPA",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/Spring/";
+          
+        },
+      },{id: "post-docker-memo-mysql",
+        
+          title: "Docker Memo Mysql",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/Docker-Memo-MySQL/";
+          
+        },
+      },{id: "post-run-a-springboot-jar-on-docker",
+        
+          title: "Run a SpringBoot jar on Docker",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/SpringBootJar/";
+          
+        },
+      },{id: "post-set-up-react-on-mac",
+        
+          title: "Set up React on Mac",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/React-On-Mac/";
+          
+        },
+      },{id: "post-setting-up-intellij-community-edition",
+        
+          title: "Setting up IntelliJ Community Edition",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/IntelliJ/";
+          
+        },
+      },{id: "projects-pilambdachart",
+          title: 'PiLambdaChart',
+          description: "Serverless IoT telemetry platform ingesting Raspberry Pi sensor data into DynamoDB with scheduled AWS Lambda chart generation and S3/CloudFront hosting.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/PiLambdaChart/";
+            },},{id: "projects-c4002-python",
+          title: 'c4002-python',
+          description: "Python library and CLI monitor for the DFRobot C4002 24GHz mmWave radar sensor on Raspberry Pi.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/c4002-python/";
+            },},{id: "projects-marginalia",
+          title: 'marginalia',
+          description: "Private, self-hosted RSS reader web application in Java, designed for seamless access across desktop and mobile devices.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/marginalia/";
+            },},{id: "projects-sumpdata",
+          title: 'sumpdata',
+          description: "Showcase Java Spring Boot application that manages IoT device telemetry data via a clean REST API.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/sumpdata/";
+            },},{
+        id: 'social-github',
+        title: 'GitHub',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://github.com/nobudev7", "_blank");
+        },
+      },{
+        id: 'social-rss',
+        title: 'RSS Feed',
+        section: 'Socials',
+        handler: () => {
+          window.open("/feed.xml", "_blank");
+        },
+      },{
+      id: 'light-theme',
+      title: 'Change theme to light',
+      description: 'Change the theme of the site to Light',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("light");
+      },
+    },
+    {
+      id: 'dark-theme',
+      title: 'Change theme to dark',
+      description: 'Change the theme of the site to Dark',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("dark");
+      },
+    },
+    {
+      id: 'system-theme',
+      title: 'Use system default theme',
+      description: 'Change the theme of the site to System Default',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("system");
+      },
+    },];
+
+</script> <script src="/assets/al_search/js/shortcut-key.js"></script> </body> </html>

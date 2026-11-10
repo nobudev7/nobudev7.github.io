@@ -1,0 +1,354 @@
+<!DOCTYPE html> <html lang="en"> <head> <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <title> PiLambdaChart: Building a Serverless IoT Dashboard with Raspberry Pi and AWS | Nobu Dev Journal </title> <meta name="author" content="Nobu "> <meta name="description" content="Java backend developer journal covering high-performance web architecture, AWS serverless pipelines, and Raspberry Pi IoT projects. "> <meta name="keywords" content="java, spring-boot, aws, raspberry-pi, serverless, docker"> <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; media-src 'self' https:; frame-src 'self' https:; connect-src 'self' https:;"> <style>
+  :root {
+    --max-content-width: 930px;
+  }
+</style> <link rel="stylesheet" href="/assets/css/tailwind.css?v=50c64c15cbb9fd1ce6056fdb8bcb4b62"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css" integrity="sha256-MVopmdyC2tYTiJ8wlktf0uh0v4NgT+vNdyVFepi7Q0c=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/academicons@1.9.5/css/academicons.min.css" integrity="sha256-SzrCOBJbGVFMahewkgjwnApaV2+av1DwMAA+/QGLyZw=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/scholar-icons@1.0.3/css/scholar-icons.css" integrity="sha256-VY3hHVj/hNX3fYG6wtbA6TcKJQl7+FthzGSyIB64klY=" crossorigin="anonymous"> <link defer rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Material+Icons&amp;display=swap"> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-github.css?v=591dab5a4e56573bf4ef7fd332894c99" media="" id="highlight_theme_light"> <link rel="shortcut icon" href="data:image/svg+xml,&lt;svg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22&gt;&lt;text%20y=%22.9em%22%20font-size=%2290%22&gt;%F0%9F%92%BB&lt;/text&gt;&lt;/svg&gt;"> <link rel="stylesheet" href="/assets/css/main.css?v=3116ba77db9ee1581d05bb3e86fbf7f1"> <link rel="canonical" href="https://www.nobudev7.com/blog/2026/PiLambdaChart-Building-a-Serverless-IoT-Dashboard-with-Raspberry-Pi-and-AWS/"> <script src="/assets/js/theme.js?v=5286c3e4c334d0ecb8fc0c40ff4fa7ec"></script> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-native.css?v=5847e5ed4a4568527aa6cfab446049ca" media="none" id="highlight_theme_dark"> <script>
+    initTheme();
+  </script> </head> <body class="fixed-top-nav "> <header> <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation"> <div class="container"> <a class="navbar-brand title font-weight-lighter" href="/"> Nobu Dev Journal </a> <button class="navbar-toggler collapsed navbar-toggler-main" type="button" data-nav-toggle="navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> <span class="sr-only">Toggle navigation</span> <span class="icon-bar top-bar"></span> <span class="icon-bar middle-bar"></span> <span class="icon-bar bottom-bar"></span> </button> <div class="collapse navbar-collapse navbar-collapse-main" id="navbarNav"> <ul class="navbar-nav navbar-menu-list flex-nowrap"> <li class="nav-item "> <a class="nav-link" href="/">about </a> </li> <li class="nav-item "> <a class="nav-link" href="/projects/">projects </a> </li> <li class="nav-item active"> <a class="nav-link" href="/blog/">blog </a> </li> <li class="nav-item"> <button id="search-toggle" type="button" title="Search" aria-label="Open search"> <span class="nav-link">ctrl k <i class="fa-solid fa-magnifying-glass"></i></span> </button> </li> <li class="toggle-container"> <button id="light-toggle" type="button" title="Change theme" aria-label="Change color theme"> <i class="fa-half-sun-moon" id="light-toggle-system"></i> <i class="fa-solid fa-moon" id="light-toggle-dark"></i> <i class="fa-solid fa-sun" id="light-toggle-light"></i> </button> </li> </ul> </div> </div> </nav> <progress id="progress" value="0"> <div class="progress-container"> <span class="progress-bar"></span> </div> </progress> </header> <div class="container mt-5" role="main"> <div class="post"> <header class="post-header"> <h1 class="post-title">PiLambdaChart: Building a Serverless IoT Dashboard with Raspberry Pi and AWS</h1> <p class="post-meta"> Created on August 14, 2026 </p> <p class="post-tags"> <a href="/blog/2026"> <i class="fa-solid fa-calendar fa-sm"></i> 2026 </a>   ·   <a href="/blog/tag/aws"> <i class="fa-solid fa-hashtag fa-sm"></i> aws</a>   <a href="/blog/tag/raspberry-pi"> <i class="fa-solid fa-hashtag fa-sm"></i> raspberry-pi</a>   <a href="/blog/tag/serverless"> <i class="fa-solid fa-hashtag fa-sm"></i> serverless</a>   <a href="/blog/tag/java"> <i class="fa-solid fa-hashtag fa-sm"></i> java</a>   ·   <a href="/blog/category/aws"> <i class="fa-solid fa-tag fa-sm"></i> aws</a>   <a href="/blog/category/raspi"> <i class="fa-solid fa-tag fa-sm"></i> Raspi</a> </p> </header> <article class="post-content"> <div id="markdown-content"> <table> <thead> <tr> <th style="text-align: left"> </th> <th style="text-align: left">Technology</th> <th style="text-align: left">Role</th> </tr> </thead> <tbody> <tr> <td style="text-align: left"><img src="/images/2026-08-14/logos/Raspberry-Pi.png" alt="Raspberry Pi" height="24"></td> <td style="text-align: left">Raspberry Pi</td> <td style="text-align: left">Edge device (sensor host)</td> </tr> <tr> <td style="text-align: left"><img src="/images/2026-08-14/logos/python-logo-only.png" alt="Python" height="24"></td> <td style="text-align: left">Python 3 (asyncio)</td> <td style="text-align: left">Edge agent &amp; sensor drivers</td> </tr> <tr> <td style="text-align: left"><img src="/images/2026-08-14/logos/Java.png" alt="Java" height="24"></td> <td style="text-align: left">Java 21</td> <td style="text-align: left">Lambda chart generator</td> </tr> <tr> <td style="text-align: left">📊</td> <td style="text-align: left">JFreeChart</td> <td style="text-align: left">Server-side chart rendering</td> </tr> <tr> <td style="text-align: left"><img src="/images/2026-08-14/logos/Arch_AWS-Lambda_64.svg" alt="Lambda" height="24"></td> <td style="text-align: left">AWS Lambda</td> <td style="text-align: left">Serverless compute</td> </tr> <tr> <td style="text-align: left"><img src="/images/2026-08-14/logos/Arch_Amazon-DynamoDB_64.png" alt="DynamoDB" height="24"></td> <td style="text-align: left">DynamoDB</td> <td style="text-align: left">Time-series &amp; metadata storage</td> </tr> <tr> <td style="text-align: left"><img src="/images/2026-08-14/logos/Arch_Amazon-Simple-Storage-Service_64.png" alt="S3" height="24"></td> <td style="text-align: left">S3</td> <td style="text-align: left">Static file hosting</td> </tr> <tr> <td style="text-align: left"><img src="/images/2026-08-14/logos/Arch_Amazon-CloudFront_64.png" alt="CloudFront" height="24"></td> <td style="text-align: left">CloudFront</td> <td style="text-align: left">CDN &amp; HTTPS delivery</td> </tr> <tr> <td style="text-align: left"><img src="/images/2026-08-14/logos/Arch_Amazon-EventBridge_64.png" alt="EventBridge" height="24"></td> <td style="text-align: left">EventBridge</td> <td style="text-align: left">Scheduled triggers</td> </tr> <tr> <td style="text-align: left"><img src="/images/2026-08-14/logos/Terraform.png" alt="Terraform" height="24"></td> <td style="text-align: left">Terraform</td> <td style="text-align: left">Infrastructure as Code</td> </tr> <tr> <td style="text-align: left"><img src="/images/2026-08-14/logos/html5-badge-h-solo.png" alt="HTML" height="24"></td> <td style="text-align: left">HTML / JS</td> <td style="text-align: left">Frontend dashboard (vanilla, no framework)</td> </tr> <tr> <td style="text-align: left"><img src="/images/2026-08-14/logos/css.svg" alt="CSS" height="24"></td> <td style="text-align: left">CSS</td> <td style="text-align: left">Styling &amp; dark theme</td> </tr> </tbody> </table> <p>I already had a serverless water level monitoring system running — a Raspberry Pi with an ultrasonic sensor uploading readings to DynamoDB, a Lambda function generating daily charts, and CloudFront serving them from S3. It worked well for that single purpose. But as I added more sensors — temperature, humidity, ambient light, motion — I realized the system was too tightly coupled to water level monitoring. The metric names, chart styles, and dashboard layout were all hardcoded for one use case. I wanted to rebuild it as a <strong>generic, multi-device telemetry platform</strong> that could handle any number of sensors and metrics, with a modern interactive UI — while preserving the serverless architecture that kept costs near zero.</p> <p><img src="/images/2026-08-14/telemetry-dashboard.png" alt="PiLambdaChart Dashboard"></p> <h2 id="github-repo">Github Repo</h2> <p>The full project is open source: <a href="https://github.com/nobudev7/PiLambdaChart" rel="external nofollow noopener" target="_blank">github.com/nobudev7/PiLambdaChart</a></p> <p>The README walks through setting up each layer. If you have a Raspberry Pi with a DHT22 sensor and an AWS account, you can have a working dashboard in about an hour.</p> <h2 id="the-architecture">The Architecture</h2> <p>The system is split into four decoupled layers, each independently deployable and scalable:</p> <p><img src="/images/2026-08-14/architecture-flow.png" alt="Architecture Flow"></p> <ol> <li> <p><strong>Edge (Raspberry Pi + Python)</strong> — An async Python daemon reads sensors at configurable intervals and writes readings to DynamoDB. Failed uploads are buffered in a memory-capped retry queue and flushed automatically when connectivity returns.</p> </li> <li> <p><strong>Storage (DynamoDB)</strong> — Two tables: <code class="language-plaintext highlighter-rouge">IoT_Telemetry</code> for time-series data, <code class="language-plaintext highlighter-rouge">IoT_Metadata</code> for device and metric registries (names, units, chart types, icons). The telemetry table uses a composite partition key <code class="language-plaintext highlighter-rouge">deviceId#metricId#year</code> with an ISO-8601 timestamp as the sort key, which keeps partitions bounded and allows efficient daily range queries with a single <code class="language-plaintext highlighter-rouge">BETWEEN</code> operation.</p> </li> <li> <p><strong>Processing (Lambda + EventBridge)</strong> — A Java 21 Lambda function triggered every 5 minutes by EventBridge. It queries a day’s worth of telemetry, renders dark-themed JFreeChart PNGs, generates JSON sidecar files for interactive tooltips, and uploads everything to S3.</p> </li> <li> <p><strong>Frontend (S3 + CloudFront)</strong> — A pure client-side SPA (no build step, no framework) that fetches a catalog index and metadata JSON, then renders chart tiles, synchronized crosshairs, and a responsive dark-mode UI. CloudFront delivers it globally with HTTPS and optional HTTP Basic Auth.</p> </li> </ol> <h2 id="why-serverless">Why Serverless</h2> <p>The decision to go fully serverless wasn’t academic — it was economic and operational.</p> <p>With a traditional approach, I would need an EC2 instance (or at minimum a container) running 24/7 to receive sensor data and serve the dashboard. For a personal monitoring project, that’s $15-30/month in baseline costs plus the overhead of OS patching, uptime monitoring, and capacity planning.</p> <p>With the serverless stack, the cost breakdown looks very different:</p> <table> <thead> <tr> <th style="text-align: left">Component</th> <th style="text-align: left">Cost Driver</th> <th style="text-align: left">Typical Monthly Cost</th> </tr> </thead> <tbody> <tr> <td style="text-align: left">DynamoDB</td> <td style="text-align: left">On-demand reads/writes</td> <td style="text-align: left">~$0.25</td> </tr> <tr> <td style="text-align: left">Lambda</td> <td style="text-align: left">5-min invocations × 30 days</td> <td style="text-align: left">~$0.50</td> </tr> <tr> <td style="text-align: left">S3</td> <td style="text-align: left">Storage + requests</td> <td style="text-align: left">~$0.10</td> </tr> <tr> <td style="text-align: left">CloudFront</td> <td style="text-align: left">Data transfer</td> <td style="text-align: left">~$0.50</td> </tr> <tr> <td style="text-align: left">EventBridge</td> <td style="text-align: left">Scheduling</td> <td style="text-align: left">Free tier</td> </tr> </tbody> </table> <p><strong>Total: ~$1.35/month</strong> — and zero servers to maintain. The infrastructure scales with usage, not with time.</p> <h2 id="the-edge-sensors-and-resilience">The Edge: Sensors and Resilience</h2> <p><img src="/images/2026-08-14/raspi-with-3-sensors.jpg" alt="Raspberry Pi with Sensors"></p> <p>The edge agent supports multiple sensor types through a plugin architecture. Each sensor driver inherits from a <code class="language-plaintext highlighter-rouge">BaseSensor</code> class:</p> <table> <thead> <tr> <th style="text-align: left">Sensor</th> <th style="text-align: left">Interface</th> <th style="text-align: left">Metric</th> </tr> </thead> <tbody> <tr> <td style="text-align: left">DHT22</td> <td style="text-align: left">GPIO</td> <td style="text-align: left">Temperature (°C), Humidity (%)</td> </tr> <tr> <td style="text-align: left">BH1750</td> <td style="text-align: left">I2C</td> <td style="text-align: left">Ambient Light (Lux)</td> </tr> <tr> <td style="text-align: left">PIR</td> <td style="text-align: left">GPIO interrupt</td> <td style="text-align: left">Motion Count (triggers/min)</td> </tr> <tr> <td style="text-align: left">HC-SR04</td> <td style="text-align: left">Ultrasonic GPIO</td> <td style="text-align: left">Water Level (cm)</td> </tr> </tbody> </table> <p><img src="/images/2026-08-14/raspi-with-ultrasonic.jpg" alt="Raspberry Pi with Ultrasonic Sensor"></p> <p>One feature I found essential in practice was the <strong>retry queue</strong>. My basement Pi has intermittent WiFi, and without retry logic, data points were silently lost. The agent now buffers failed uploads in an <code class="language-plaintext highlighter-rouge">asyncio.Queue</code> with a configurable memory cap and automatically flushes them when connectivity is restored. In production, this has recovered hundreds of readings that would have otherwise been dropped.</p> <p>The agent also auto-detects whether it’s running on actual Raspberry Pi hardware. When GPIO libraries aren’t available (e.g., on a Mac during development), it automatically falls back to simulated sensor data. This means the full pipeline can be tested end-to-end without physical hardware.</p> <h2 id="chart-generation-with-jfreechart-on-lambda">Chart Generation with JFreeChart on Lambda</h2> <p>As a Java developer, I naturally chose Java for the Lambda function. While looking for a charting library, I found <strong>JFreeChart</strong> — a mature, feature-rich library in the JVM ecosystem that produces publication-quality charts. It turned out to be an excellent fit for server-side rendering of dark-themed, styled chart images.</p> <p>The chart generator renders dark-themed PNGs with a custom 8-color palette designed for high contrast against the slate background. Similar hues are spread apart across metric IDs so that adjacent metrics always have visually distinct colors:</p> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Metric 1 → Sky Blue     Metric 5 → Purple
+Metric 2 → Rose         Metric 6 → Teal
+Metric 3 → Emerald      Metric 7 → Amber
+Metric 4 → Orange       Metric 8 → Fuchsia
+</code></pre></div></div> <p>Alongside each PNG, the Lambda generates a <strong>JSON sidecar</strong> file containing the exact plot area boundaries and per-point data coordinates. This is the key to the frontend’s interactive crosshairs — the browser can calculate sub-pixel-accurate tooltip positions by mapping mouse coordinates onto the chart’s data space using these boundary values.</p> <h2 id="the-frontend-zero-dependencies-full-interactivity">The Frontend: Zero Dependencies, Full Interactivity</h2> <p>The dashboard is a single-page application built with zero frameworks, zero build tools, and zero server-side rendering. The entire frontend is three files: <code class="language-plaintext highlighter-rouge">index.html</code>, <code class="language-plaintext highlighter-rouge">style.css</code>, and <code class="language-plaintext highlighter-rouge">app.js</code>.</p> <p>On load, the browser fetches two files from S3:</p> <ul> <li> <code class="language-plaintext highlighter-rouge">file-list.json</code> — a catalog of all available charts organized by device, metric, year, and month</li> <li> <code class="language-plaintext highlighter-rouge">metadata.json</code> — device names, metric names, units, emoji icons, and chart configurations</li> </ul> <p>From these, the app constructs the full sidebar navigation and chart tile grids entirely client-side. This means serving the dashboard costs essentially nothing — CloudFront delivers static files, and there is zero compute at view time.</p> <p>The interactive features include:</p> <ul> <li> <strong>Synchronized crosshairs</strong> across all metric charts for the same day</li> <li> <strong>Data tooltips</strong> with time and value, snapped to the nearest data point</li> <li> <strong>Full-screen lightbox</strong> for detailed chart inspection</li> <li> <strong>Deep-linking</strong> via URL parameters (<code class="language-plaintext highlighter-rouge">?device=1&amp;year=2026&amp;month=08&amp;day=14</code>)</li> <li> <strong>Day-of-week color coding</strong> — Sunday in red, Saturday in blue</li> </ul> <h2 id="infrastructure-as-code">Infrastructure as Code</h2> <p>The entire AWS stack is defined in Terraform with feature flags for incremental deployment:</p> <div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="py">enable_lambda</span>           <span class="p">=</span> <span class="s">true</span>
+<span class="py">enable_cloudfront</span>       <span class="p">=</span> <span class="s">true</span>
+<span class="py">enable_metadata_seeding</span> <span class="p">=</span> <span class="s">true</span>
+</code></pre></div></div> <p>This means you can deploy DynamoDB tables first, start collecting data, then add Lambda chart generation later, and finally enable CloudFront when you’re ready to go public. Each layer can be toggled independently.</p> <p>Device and metric definitions live in <code class="language-plaintext highlighter-rouge">terraform.tfvars</code> (which is gitignored), keeping personal device names and locations out of the repository:</p> <div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">seeded_devices</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="dl">"</span><span class="s2">1</span><span class="dl">"</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">name</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">Sump Pump Monitor</span><span class="dl">"</span><span class="p">,</span> <span class="nx">location</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">Basement</span><span class="dl">"</span> <span class="p">}</span>
+  <span class="dl">"</span><span class="s2">2</span><span class="dl">"</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">name</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">Ambient Monitor</span><span class="dl">"</span><span class="p">,</span>   <span class="nx">location</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">Bedroom</span><span class="dl">"</span> <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div> <h2 id="what-i-learned">What I Learned</h2> <p>Building PiLambdaChart reinforced a few principles:</p> <p><strong>Event-driven architectures are naturally resilient.</strong> Each component — edge agent, DynamoDB, Lambda, S3, CloudFront — operates independently. If Lambda fails, the data is still in DynamoDB waiting. If the edge goes offline, the retry queue catches it. There’s no single point of failure.</p> <p><strong>Pre-rendered assets beat real-time rendering for dashboards.</strong> By generating charts as static PNGs on a schedule rather than rendering them in the browser on each page load, the dashboard loads instantly from a CDN cache. The JSON sidecar approach gives us the best of both worlds — static delivery with interactive overlays.</p> <p><strong>Serverless doesn’t mean simple.</strong> The infrastructure has real complexity: IAM least-privilege policies, DynamoDB partition key design, CloudFront cache behaviors, and Terraform state management. But that complexity lives in the infrastructure definition, not in day-to-day operational burden. Compared to running your own server, there’s much less to worry about — no OS patching, no uptime monitoring, no capacity planning.</p> </div> </article> <br> <hr> <br> <h2 class="text-3xl font-semibold mb-4 mt-12">Enjoy Reading This Article?</h2> <p class="mb-2">Here are some more articles you might like to read next:</p> <ul class="list-disc pl-7 my-3 space-y-2 marker:text-[var(--global-theme-color)]"> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Migrating-to-Serverless-Raspberry-Pi-to-DynamoDB-plus-Lambda-Function-for-Chart-Generation/">Migrating To Serverless: Raspberry Pi To Dynamodb Plus Lambda Function For Chart Generation</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2024/AWS-Lightsail/">AWS Lightsail Java Server Setup Memo</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Exploring-Multi-Cloud-Deployments-Migrating-from-AWS-Lightsail-to-Oracle-Cloud-OCI/">Exploring Multi-Cloud Deployments: Migrating from AWS Lightsail to Oracle Cloud (OCI)</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/AWS-Serverless-Sump-Chart/">Aws Serverless Sump Chart</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Deploying-the-Java-Chart-Generator-to-AWS-Lambda-on-Schedule/">Deploying The Java Chart Generator To Aws Lambda On Schedule</a> </li> </ul> </div> </div> <footer class="fixed-bottom" role="contentinfo"> <div class="container mt-0"> © Copyright 2026 Nobu . Powered by <a href="https://jekyllrb.com/" target="_blank" rel="external nofollow noopener">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" rel="external nofollow noopener" target="_blank">al-folio</a> theme. </div> </footer> <script>
+  window.alFolio = {
+    compatBootstrap: false
+  };
+</script> <script src="/assets/js/nav-toggle.js?v=141bd79a73ebc0f0b6ea58e440ae79fc"></script> <script defer src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/imagesloaded@5.0.0/imagesloaded.pkgd.min.js" integrity="sha256-htrLFfZJ6v5udOG+3kNLINIKh2gvoKqwEhHYfTTMICc=" crossorigin="anonymous"></script> <script defer src="/assets/js/masonry.js?v=e49affc7bd2646f6acdad1dbe02c2359" type="text/javascript"></script> <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script> <script src="/assets/al_math/js/mathjax-setup.js"></script> <script src="/assets/js/tooltips-setup.js?v=fe487e99db6c43751e6e7bdb2d6a0611"></script> <script src="/assets/js/no_defer.js?v=53b1b1a645525975c963ce8bf8bfefcf"></script> <script defer src="/assets/js/common.js?v=87baac90f765f2f3362dcf6aaf312a8a"></script> <script defer src="/assets/js/copy_code.js?v=c8a01c11a92744d44b093fc3bda915df" type="text/javascript"></script> <script defer src="/assets/js/jupyter_new_tab.js?v=896d254890d9b47f0281f63bfccf0dee"></script> <script async src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script> <script async src="https://badge.dimensions.ai/badge.js"></script> <script defer src="https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js" integrity="sha256-ZgMyDAIYDYGxbcpJcfUnYwNevG/xi9OHKaR/8GK+jWc=" crossorigin="anonymous"></script> <script defer src="/assets/al_img_tools/js/zoom.js"></script> <script defer src="/assets/js/progress-bar.js?v=499464c5c63ced6cf7ad62509f1e2610" type="text/javascript"></script> <script src="https://cdn.jsdelivr.net/npm/vanilla-back-to-top@7.2.1/dist/vanilla-back-to-top.min.js" integrity="sha256-uMJJ3EoTyfRBoTbR+lrfu1uRQ87RZG8AR3cVNuQVeFg=" crossorigin="anonymous"></script> <script>
+    addBackToTop();
+  </script> <script type="module" src="/assets/al_search/js/search/ninja-keys.min.js"></script> <ninja-keys hidebreadcrumbs noautoloadmdicons placeholder="Type to start searching"></ninja-keys> <script src="/assets/al_search/js/search-setup.js"></script> <script>
+// get the ninja-keys element
+const ninja = document.querySelector('ninja-keys');
+
+// add the home and posts menu items
+ninja.data = [{
+    id: "nav-about",
+    title: "about",
+    section: "Navigation",
+    handler: () => {
+      window.location.href = "/";
+    },
+  },{id: "nav-projects",
+          title: "projects",
+          description: "Open-source projects, cloud infrastructure, and IoT telemetry systems.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/projects/";
+          },
+        },{id: "nav-blog",
+          title: "blog",
+          description: "",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/blog/";
+          },
+        },{id: "post-exploring-multi-cloud-deployments-migrating-from-aws-lightsail-to-oracle-cloud-oci",
+        
+          title: "Exploring Multi-Cloud Deployments: Migrating from AWS Lightsail to Oracle Cloud (OCI)",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Exploring-Multi-Cloud-Deployments-Migrating-from-AWS-Lightsail-to-Oracle-Cloud-OCI/";
+          
+        },
+      },{id: "post-building-and-publishing-c4002-python-a-24ghz-mmwave-radar-driver-for-raspberry-pi",
+        
+          title: "Building and Publishing c4002-python: A 24GHz mmWave Radar Driver for Raspberry Pi",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Building-and-Publishing-c4002-python-mmWave-Radar-Driver/";
+          
+        },
+      },{id: "post-pilambdachart-building-a-serverless-iot-dashboard-with-raspberry-pi-and-aws",
+        
+          title: "PiLambdaChart: Building a Serverless IoT Dashboard with Raspberry Pi and AWS",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/PiLambdaChart-Building-a-Serverless-IoT-Dashboard-with-Raspberry-Pi-and-AWS/";
+          
+        },
+      },{id: "post-setting-up-raspberry-pi-with-an-ultrasonic-sensor",
+        
+          title: "Setting up Raspberry Pi with an Ultrasonic Sensor",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Setting-Up-Pi-with-Ultrasonic-Sensor/";
+          
+        },
+      },{id: "post-using-an-ir-sensor-for-precise-distance-measurement-on-raspberry-pi",
+        
+          title: "Using an IR Sensor for Precise Distance Measurement on Raspberry Pi",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/using-ir-sensor-for-distance-measurement/";
+          
+        },
+      },{id: "post-deploying-the-java-chart-generator-to-aws-lambda-on-schedule",
+        
+          title: "Deploying The Java Chart Generator To Aws Lambda On Schedule",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Deploying-the-Java-Chart-Generator-to-AWS-Lambda-on-Schedule/";
+          
+        },
+      },{id: "post-migrating-to-serverless-raspberry-pi-to-dynamodb-plus-lambda-function-for-chart-generation",
+        
+          title: "Migrating To Serverless: Raspberry Pi To Dynamodb Plus Lambda Function For Chart Generation...",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Migrating-to-Serverless-Raspberry-Pi-to-DynamoDB-plus-Lambda-Function-for-Chart-Generation/";
+          
+        },
+      },{id: "post-securing-serverless-site-migrating-from-s3-hosting-to-amazon-cloudfront-https",
+        
+          title: "Securing Serverless Site   Migrating From S3 Hosting To Amazon Cloudfront Https",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Securing-Serverless-Site-Migrating-from-S3-Hosting-to-Amazon-CloudFront-HTTPS/";
+          
+        },
+      },{id: "post-aws-serverless-sump-chart",
+        
+          title: "Aws Serverless Sump Chart",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/AWS-Serverless-Sump-Chart/";
+          
+        },
+      },{id: "post-restricting-access-with-http-basic-authentication",
+        
+          title: "Restricting Access With Http Basic Authentication",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/Restricting-Access-with-HTTP-Basic-Authentication/";
+          
+        },
+      },{id: "post-vs-code-snippet-in-front-matter",
+        
+          title: "Vs Code Snippet In Front Matter",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/VS-Code-Snippet-In-Front-Matter/";
+          
+        },
+      },{id: "post-set-up-jekyll-locally-on-mac",
+        
+          title: "Set up Jekyll Locally on Mac",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/Set-up-Jekyll-locally-on-Mac/";
+          
+        },
+      },{id: "post-aws-lightsail-java-server-setup-memo",
+        
+          title: "AWS Lightsail Java Server Setup Memo",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/AWS-Lightsail/";
+          
+        },
+      },{id: "post-github-actions-for-jar-file-deployment",
+        
+          title: "GitHub Actions for Jar file deployment",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/GitHubActions/";
+          
+        },
+      },{id: "post-docker-nginx-demo",
+        
+          title: "Docker Nginx Demo",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/Docker-Nginx-Demo/";
+          
+        },
+      },{id: "post-my-java-memo",
+        
+          title: "My Java Memo",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/My-Java-Memo/";
+          
+        },
+      },{id: "post-installing-streamlit-on-mac",
+        
+          title: "Installing Streamlit On Mac",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/Installing-Streamlit-on-Mac/";
+          
+        },
+      },{id: "post-spring-boot-multiple-primary-keys-via-jpa",
+        
+          title: "Spring Boot: Multiple Primary Keys via JPA",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/Spring/";
+          
+        },
+      },{id: "post-docker-memo-mysql",
+        
+          title: "Docker Memo Mysql",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/Docker-Memo-MySQL/";
+          
+        },
+      },{id: "post-run-a-springboot-jar-on-docker",
+        
+          title: "Run a SpringBoot jar on Docker",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/SpringBootJar/";
+          
+        },
+      },{id: "post-set-up-react-on-mac",
+        
+          title: "Set up React on Mac",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/React-On-Mac/";
+          
+        },
+      },{id: "post-setting-up-intellij-community-edition",
+        
+          title: "Setting up IntelliJ Community Edition",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/IntelliJ/";
+          
+        },
+      },{id: "projects-pilambdachart",
+          title: 'PiLambdaChart',
+          description: "Serverless IoT telemetry platform ingesting Raspberry Pi sensor data into DynamoDB with scheduled AWS Lambda chart generation and S3/CloudFront hosting.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/PiLambdaChart/";
+            },},{id: "projects-c4002-python",
+          title: 'c4002-python',
+          description: "Python library and CLI monitor for the DFRobot C4002 24GHz mmWave radar sensor on Raspberry Pi.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/c4002-python/";
+            },},{id: "projects-marginalia",
+          title: 'marginalia',
+          description: "Private, self-hosted RSS reader web application in Java, designed for seamless access across desktop and mobile devices.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/marginalia/";
+            },},{id: "projects-sumpdata",
+          title: 'sumpdata',
+          description: "Showcase Java Spring Boot application that manages IoT device telemetry data via a clean REST API.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/sumpdata/";
+            },},{
+        id: 'social-github',
+        title: 'GitHub',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://github.com/nobudev7", "_blank");
+        },
+      },{
+        id: 'social-rss',
+        title: 'RSS Feed',
+        section: 'Socials',
+        handler: () => {
+          window.open("/feed.xml", "_blank");
+        },
+      },{
+      id: 'light-theme',
+      title: 'Change theme to light',
+      description: 'Change the theme of the site to Light',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("light");
+      },
+    },
+    {
+      id: 'dark-theme',
+      title: 'Change theme to dark',
+      description: 'Change the theme of the site to Dark',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("dark");
+      },
+    },
+    {
+      id: 'system-theme',
+      title: 'Use system default theme',
+      description: 'Change the theme of the site to System Default',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("system");
+      },
+    },];
+
+</script> <script src="/assets/al_search/js/shortcut-key.js"></script> </body> </html>
