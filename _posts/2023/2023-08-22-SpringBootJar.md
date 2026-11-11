@@ -1,12 +1,16 @@
 ---
-title: Run a SpringBoot jar on Docker
+title: Running a Spring Boot JAR on Docker with Amazon Corretto
 categories: docker spring
 tags: [spring-boot, docker, java]
 ---
-Some articles suggest to run a centos docker image to run SpringBoot app. Since CentOS is deprecated, I found that [amazoncorretto](https://hub.docker.com/_/amazoncorretto) is an option.
 
-Dockerfile
-```docker
+Some articles suggest using a CentOS base image to run a Spring Boot application in Docker. Since CentOS is deprecated, [Amazon Corretto](https://hub.docker.com/_/amazoncorretto) provides a clean, supported OpenJDK alternative.
+
+Here is a quick reference for packaging and running a Spring Boot JAR with Amazon Corretto 20.
+
+## Dockerfile
+
+```dockerfile
 FROM amazoncorretto:20
 
 VOLUME [ "/data" ]
@@ -15,18 +19,35 @@ RUN sh -c 'touch /ValidatingFormInput.jar'
 ENTRYPOINT [ "java", "-jar", "/MySpringBootApp" ]
 ```
 
-Build Docker image
+### Line-by-Line Breakdown
 
-```
-$ docker build -t myspringbootapp .  
-```
-Note that the Docker image name has to be lower case.
+- `FROM amazoncorretto:20`: Uses the official Amazon Corretto 20 image as the Java runtime environment.
+- `VOLUME [ "/data" ]`: Mounts `/data` as an external volume for application data or logs.
+- `ADD MySpringBootApp-0.0.1-SNAPSHOT.jar MySpringBootApp`: Copies the packaged JAR file into the container image.
+- `RUN sh -c 'touch /ValidatingFormInput.jar'`: Updates the file modification timestamp for the application artifact.
+- `ENTRYPOINT [ "java", "-jar", "/MySpringBootApp" ]`: Specifies the command executed when the container starts.
 
-Run the docker container
+## Build the Docker Image
+
+Build the container image from the directory containing the `Dockerfile`:
+
+```bash
+$ docker build -t myspringbootapp .
+```
+
+> **Note:** The Docker image name must be all lowercase. Using uppercase characters (like `MySpringBootApp`) will cause Docker to reject the tag name.
+
+## Run the Container
+
+Run the container, mapping port `8080`:
 
 ```bash
 $ docker run -p 8080:8080 myspringbootapp
+```
 
+The application starts up in under a second:
+
+```text
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
 ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
@@ -35,17 +56,7 @@ $ docker run -p 8080:8080 myspringbootapp
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.1.1)
 
-2023-08-22T00:41:04.306Z  INFO 1 --- [           main] i.s.s.V.MySpringBootAppApplication   : Starting MySpringBootAppApplication v0.0.1-SNAPSHOT using Java 20.0.2 with PID 1 (/MySpringBootAppApplication.jar started by root in /)
-2023-08-22T00:41:04.307Z  INFO 1 --- [           main] i.s.s.V.MySpringBootAppApplication   : No active profile set, falling back to 1 default profile: "default"
-2023-08-22T00:41:04.800Z  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
-2023-08-22T00:41:04.805Z  INFO 1 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2023-08-22T00:41:04.805Z  INFO 1 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.10]
-2023-08-22T00:41:04.838Z  INFO 1 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2023-08-22T00:41:04.838Z  INFO 1 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 505 ms
-2023-08-22T00:41:05.006Z  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
-2023-08-22T00:41:05.013Z  INFO 1 --- [           main] i.s.s.V.MySpringBootAppApplication   : Started MySpringBootAppApplication in 0.942 seconds (process running for 1.172)
-2023-08-22T00:41:18.153Z  INFO 1 --- [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2023-08-22T00:41:18.153Z  INFO 1 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2023-08-22T00:41:18.154Z  INFO 1 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
-
+INFO 1 --- [main] c.e.demo.MySpringBootAppApplication     : Starting MySpringBootAppApplication v0.0.1-SNAPSHOT using Java 20.0.2...
+INFO 1 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer : Tomcat started on port(s): 8080 (http) with context path ''
+INFO 1 --- [main] c.e.demo.MySpringBootAppApplication     : Started MySpringBootAppApplication in 0.942 seconds
 ```
