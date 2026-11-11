@@ -1,0 +1,50 @@
+<div class="col">
+  <a href="{% if project.redirect %}{{ project.redirect }}{% else %}{{ project.url | relative_url }}{% endif %}">
+    <div class="card h-100 hoverable">
+      <div class="card-body d-flex flex-column">
+        <h2 class="card-title">{{ project.title }}</h2>
+        {% if project.img %}
+          {% if project.img_size == 'small' or project.title == 'c4002-python' %}
+            <div class="project-img-wrapper project-img-small">
+              {%
+                include figure.liquid
+                loading="eager"
+                path=project.img
+                sizes="250px"
+                alt="project thumbnail"
+                class="project-img"
+              %}
+            </div>
+          {% else %}
+            <div class="project-img-wrapper">
+              {%
+                include figure.liquid
+                loading="eager"
+                path=project.img
+                sizes="250px"
+                alt="project thumbnail"
+                class="project-img"
+              %}
+            </div>
+          {% endif %}
+        {% endif %}
+        <p class="card-text flex-grow-1">{{ project.description }}</p>
+        <div class="row ml-1 mr-1 p-0 mt-auto">
+          {% if project.github %}
+            <div class="github-icon">
+              <div class="icon" data-toggle="tooltip" title="Code Repository">
+                <a href="{{ project.github }}"><i class="fa-brands fa-github gh-icon"></i></a>
+              </div>
+              {% if project.github_stars %}
+                <span class="stars" data-toggle="tooltip" title="GitHub Stars">
+                  <i class="fa-solid fa-star"></i>
+                  <span id="{{ project.github_stars }}-stars"></span>
+                </span>
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </a>
+</div>
