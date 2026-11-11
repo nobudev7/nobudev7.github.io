@@ -33,7 +33,7 @@ terraform state <span class="nb">mv</span> <span class="se">\</span>
 </code></pre></div></div> <p>Running <code class="language-plaintext highlighter-rouge">terraform plan</code> on all three stacks afterward confirmed <strong><code class="language-plaintext highlighter-rouge">0 added, 0 changed, 0 destroyed</code></strong>—proving that the directory refactoring had zero impact on the live production server.</p> <h3 id="phase-2-building-the-oci-infrastructure-stack">Phase 2: Building the OCI Infrastructure Stack</h3> <p>Next, I wrote <code class="language-plaintext highlighter-rouge">deploy/terraform/oci/</code> to provision the new environment. Key technical solutions included:</p> <ol> <li> <strong>VCN &amp; Security Lists</strong>: OCI requires provisioning a dedicated Virtual Cloud Network (VCN), Internet Gateway, Route Table, and Subnet. The Security List explicitly allows ingress for SSH (port 22), HTTP (port 80), and HTTPS (port 443 TCP/UDP).</li> <li> <strong>Host-Level <code class="language-plaintext highlighter-rouge">iptables</code> Rules</strong>: OCI’s official Ubuntu images include restrictive host <code class="language-plaintext highlighter-rouge">iptables</code> rules that drop incoming traffic on ports 80 and 443 by default, regardless of the VCN Security List. In <code class="language-plaintext highlighter-rouge">user-data.sh.tftpl</code>, cloud-init automatically inserts <code class="language-plaintext highlighter-rouge">ACCEPT</code> rules before the default Ubuntu <code class="language-plaintext highlighter-rouge">REJECT</code> rule: <div class="language-bash highlighter-rouge"> <div class="highlight"><pre class="highlight"><code>iptables <span class="nt">-I</span> INPUT 6 <span class="nt">-p</span> tcp <span class="nt">--dport</span> 80 <span class="nt">-m</span> state <span class="nt">--state</span> NEW <span class="nt">-j</span> ACCEPT
 iptables <span class="nt">-I</span> INPUT 6 <span class="nt">-p</span> tcp <span class="nt">--dport</span> 443 <span class="nt">-m</span> state <span class="nt">--state</span> NEW <span class="nt">-j</span> ACCEPT
 netfilter-persistent save
-</code></pre></div> </div> </li> <li> <strong>Dynamic Image Lookup</strong>: Rather than hardcoding image OCIDs (which change with every OS release), Terraform dynamically queries the latest Canonical Ubuntu 24.04 image matching the target architecture (<code class="language-plaintext highlighter-rouge">aarch64</code> for Ampere ARM).</li> <li> <strong>Persistent Reserved Static IP</strong>: Allocated an Always Free Reserved Public IPv4 address (<code class="language-plaintext highlighter-rouge">oci_core_public_ip</code>) to ensure the host retains a fixed public IP across reboots and maintenance.</li> </ol> <h3 id="phase-3-the-zero-downtime-live-cutover">Phase 3: The Zero-Downtime Live Cutover</h3> <p>With the OCI instance provisioned and bootstrapped (Docker Engine, 2 GB swapfile, fail2ban), we performed the cutover:</p> <ol> <li> <strong>Pre-Staging</strong>: Cloned the repository to <code class="language-plaintext highlighter-rouge">/opt/marginalia</code> on the OCI host, copied <code class="language-plaintext highlighter-rouge">deploy/.env</code>, and pre-built the containers in parallel while the AWS Lightsail instance was still serving live traffic.</li> <li> <strong>Data Consistency</strong>: Paused the backend service on Lightsail to freeze database writes, generated a compressed database snapshot (<code class="language-plaintext highlighter-rouge">marginalia_backup.sql.gz</code>), transferred it to OCI, and restored it using <code class="language-plaintext highlighter-rouge">./deploy/restore.sh</code>. All 2,508 articles, 16 feeds, 9 categories, and Flyway schema migrations were verified intact.</li> <li> <strong>DNS Repointing</strong>: Updated <code class="language-plaintext highlighter-rouge">target_ip</code> in <code class="language-plaintext highlighter-rouge">deploy/terraform/dns-route53/terraform.tfvars</code> from the Lightsail IP to the OCI Reserved Static IP and executed <code class="language-plaintext highlighter-rouge">terraform apply</code>.</li> <li> <strong>Automated TLS Issuance</strong>: Within 60 seconds of the DNS record propagating, Caddy on OCI automatically solved the ACME HTTP-01 challenge and obtained a fresh Let’s Encrypt TLS certificate for <code class="language-plaintext highlighter-rouge">marginalia.nobudev7.com</code>.</li> <li> <strong>Rollback Safety Net</strong>: Rather than immediately deleting the AWS Lightsail VM, it was left stopped but fully intact for a 24–48 hour observation window. If any subtle issue arose on ARM64, reverting a single line in <code class="language-plaintext highlighter-rouge">dns-route53/terraform.tfvars</code> would restore the entire AWS stack instantly.</li> </ol> </div> </article> <br> <hr> <br> <h2 class="text-3xl font-semibold mb-4 mt-12">Enjoy Reading This Article?</h2> <p class="mb-2">Here are some more articles you might like to read next:</p> <ul class="list-disc pl-7 my-3 space-y-2 marker:text-[var(--global-theme-color)]"> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2024/AWS-Lightsail/">AWS Lightsail Java Server Setup Memo</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/PiLambdaChart-Building-a-Serverless-IoT-Dashboard-with-Raspberry-Pi-and-AWS/">PiLambdaChart: Building a Serverless IoT Dashboard with Raspberry Pi and AWS</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Using-Muse-as-a-Coding-Agent-From-a-VM-Clone-to-a-Merged-Pull-Request/">Using Muse as a Coding Agent: From a VM Clone to a Merged Pull Request</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Migrating-to-Serverless-Raspberry-Pi-to-DynamoDB-plus-Lambda-Function-for-Chart-Generation/">Migrating To Serverless: Raspberry Pi To Dynamodb Plus Lambda Function For Chart Generation</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/AWS-Serverless-Sump-Chart/">Aws Serverless Sump Chart</a> </li> </ul> </div> </div> <footer class="fixed-bottom" role="contentinfo"> <div class="container mt-0"> © Copyright 2026 Nobu . Powered by <a href="https://jekyllrb.com/" target="_blank" rel="external nofollow noopener">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" rel="external nofollow noopener" target="_blank">al-folio</a> theme. </div> </footer> <script>
+</code></pre></div> </div> </li> <li> <strong>Dynamic Image Lookup</strong>: Rather than hardcoding image OCIDs (which change with every OS release), Terraform dynamically queries the latest Canonical Ubuntu 24.04 image matching the target architecture (<code class="language-plaintext highlighter-rouge">aarch64</code> for Ampere ARM).</li> <li> <strong>Persistent Reserved Static IP</strong>: Allocated an Always Free Reserved Public IPv4 address (<code class="language-plaintext highlighter-rouge">oci_core_public_ip</code>) to ensure the host retains a fixed public IP across reboots and maintenance.</li> </ol> <h3 id="phase-3-the-zero-downtime-live-cutover">Phase 3: The Zero-Downtime Live Cutover</h3> <p>With the OCI instance provisioned and bootstrapped (Docker Engine, 2 GB swapfile, fail2ban), we performed the cutover:</p> <ol> <li> <strong>Pre-Staging</strong>: Cloned the repository to <code class="language-plaintext highlighter-rouge">/opt/marginalia</code> on the OCI host, copied <code class="language-plaintext highlighter-rouge">deploy/.env</code>, and pre-built the containers in parallel while the AWS Lightsail instance was still serving live traffic.</li> <li> <strong>Data Consistency</strong>: Paused the backend service on Lightsail to freeze database writes, generated a compressed database snapshot (<code class="language-plaintext highlighter-rouge">marginalia_backup.sql.gz</code>), transferred it to OCI, and restored it using <code class="language-plaintext highlighter-rouge">./deploy/restore.sh</code>. All 2,508 articles, 16 feeds, 9 categories, and Flyway schema migrations were verified intact.</li> <li> <strong>DNS Repointing</strong>: Updated <code class="language-plaintext highlighter-rouge">target_ip</code> in <code class="language-plaintext highlighter-rouge">deploy/terraform/dns-route53/terraform.tfvars</code> from the Lightsail IP to the OCI Reserved Static IP and executed <code class="language-plaintext highlighter-rouge">terraform apply</code>.</li> <li> <strong>Automated TLS Issuance</strong>: Within 60 seconds of the DNS record propagating, Caddy on OCI automatically solved the ACME HTTP-01 challenge and obtained a fresh Let’s Encrypt TLS certificate for <code class="language-plaintext highlighter-rouge">marginalia.nobudev7.com</code>.</li> <li> <strong>Rollback Safety Net</strong>: Rather than immediately deleting the AWS Lightsail VM, it was left stopped but fully intact for a 24–48 hour observation window. If any subtle issue arose on ARM64, reverting a single line in <code class="language-plaintext highlighter-rouge">dns-route53/terraform.tfvars</code> would restore the entire AWS stack instantly.</li> </ol> </div> </article> <br> <hr> <br> <h2 class="text-3xl font-semibold mb-4 mt-12">Enjoy Reading This Article?</h2> <p class="mb-2">Here are some more articles you might like to read next:</p> <ul class="list-disc pl-7 my-3 space-y-2 marker:text-[var(--global-theme-color)]"> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2024/AWS-Lightsail/">AWS Lightsail Java Server Setup Memo</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/PiLambdaChart-Building-a-Serverless-IoT-Dashboard-with-Raspberry-Pi-and-AWS/">PiLambdaChart: Building a Serverless IoT Dashboard with Raspberry Pi and AWS</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Using-Muse-as-a-Coding-Agent-From-a-VM-Clone-to-a-Merged-Pull-Request/">Using Muse as a Coding Agent: From a VM Clone to a Merged Pull Request</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Migrating-to-Serverless-Raspberry-Pi-to-DynamoDB-plus-Lambda-Function-for-Chart-Generation/">Migrating To Serverless: Raspberry Pi To Dynamodb Plus Lambda Function For Chart Generation</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Building-and-Publishing-c4002-python-mmWave-Radar-Driver/">Building and Publishing c4002-python: A 24GHz mmWave Radar Driver for Raspberry Pi</a> </li> </ul> </div> </div> <footer class="fixed-bottom" role="contentinfo"> <div class="container mt-0"> © Copyright 2026 Nobu . Powered by <a href="https://jekyllrb.com/" target="_blank" rel="external nofollow noopener">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" rel="external nofollow noopener" target="_blank">al-folio</a> theme. </div> </footer> <script>
   window.alFolio = {
     compatBootstrap: false
   };
@@ -241,9 +241,9 @@ ninja.data = [{
             window.location.href = "/blog/2024/Docker-Nginx-Demo/";
           
         },
-      },{id: "post-my-java-memo",
+      },{id: "post-java-21-gotcha-resolving-quot-cannot-find-symbol-method-getfirst-quot-in-intellij",
         
-          title: "My Java Memo",
+          title: "Java 21 Gotcha: Resolving &quot;cannot find symbol: method getFirst()&quot; in IntelliJ",
         
         description: "",
         section: "Posts",
@@ -252,9 +252,9 @@ ninja.data = [{
             window.location.href = "/blog/2023/My-Java-Memo/";
           
         },
-      },{id: "post-installing-streamlit-on-mac",
+      },{id: "post-journal-memo-streamlit-prototyping-on-macos-and-the-homebrew-python-gotcha",
         
-          title: "Installing Streamlit On Mac",
+          title: "Journal Memo: Streamlit Prototyping on macOS and the Homebrew Python Gotcha",
         
         description: "",
         section: "Posts",
@@ -274,48 +274,15 @@ ninja.data = [{
             window.location.href = "/blog/2023/Spring/";
           
         },
-      },{id: "post-docker-memo-mysql",
+      },{id: "post-running-a-spring-boot-jar-on-docker-with-amazon-corretto",
         
-          title: "Docker Memo Mysql",
-        
-        description: "",
-        section: "Posts",
-        handler: () => {
-          
-            window.location.href = "/blog/2023/Docker-Memo-MySQL/";
-          
-        },
-      },{id: "post-run-a-springboot-jar-on-docker",
-        
-          title: "Run a SpringBoot jar on Docker",
+          title: "Running a Spring Boot JAR on Docker with Amazon Corretto",
         
         description: "",
         section: "Posts",
         handler: () => {
           
             window.location.href = "/blog/2023/SpringBootJar/";
-          
-        },
-      },{id: "post-set-up-react-on-mac",
-        
-          title: "Set up React on Mac",
-        
-        description: "",
-        section: "Posts",
-        handler: () => {
-          
-            window.location.href = "/blog/2023/React-On-Mac/";
-          
-        },
-      },{id: "post-setting-up-intellij-community-edition",
-        
-          title: "Setting up IntelliJ Community Edition",
-        
-        description: "",
-        section: "Posts",
-        handler: () => {
-          
-            window.location.href = "/blog/2023/IntelliJ/";
           
         },
       },{id: "projects-pilambdachart",

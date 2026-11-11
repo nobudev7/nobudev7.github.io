@@ -1,40 +1,29 @@
-<!DOCTYPE html> <html lang="en"> <head> <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <title> Run a SpringBoot jar on Docker | Nobu’s Engineering Notebook </title> <meta name="author" content="Nobu "> <meta name="description" content="Java backend engineering notebook covering high-performance web architecture, AWS serverless pipelines, and Raspberry Pi IoT projects. "> <meta name="keywords" content="java, spring-boot, aws, raspberry-pi, serverless, docker"> <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; media-src 'self' https:; frame-src 'self' https:; connect-src 'self' https:;"> <style>
+<!DOCTYPE html> <html lang="en"> <head> <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <title> Running a Spring Boot JAR on Docker with Amazon Corretto | Nobu’s Engineering Notebook </title> <meta name="author" content="Nobu "> <meta name="description" content="Java backend engineering notebook covering high-performance web architecture, AWS serverless pipelines, and Raspberry Pi IoT projects. "> <meta name="keywords" content="java, spring-boot, aws, raspberry-pi, serverless, docker"> <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; media-src 'self' https:; frame-src 'self' https:; connect-src 'self' https:;"> <style>
   :root {
     --max-content-width: 930px;
   }
 </style> <link rel="stylesheet" href="/assets/css/tailwind.css?v=50c64c15cbb9fd1ce6056fdb8bcb4b62"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css" integrity="sha256-MVopmdyC2tYTiJ8wlktf0uh0v4NgT+vNdyVFepi7Q0c=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/academicons@1.9.5/css/academicons.min.css" integrity="sha256-SzrCOBJbGVFMahewkgjwnApaV2+av1DwMAA+/QGLyZw=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/scholar-icons@1.0.3/css/scholar-icons.css" integrity="sha256-VY3hHVj/hNX3fYG6wtbA6TcKJQl7+FthzGSyIB64klY=" crossorigin="anonymous"> <link defer rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Material+Icons&amp;display=swap"> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-github.css?v=591dab5a4e56573bf4ef7fd332894c99" media="" id="highlight_theme_light"> <link rel="shortcut icon" href="data:image/svg+xml,&lt;svg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22&gt;&lt;text%20y=%22.9em%22%20font-size=%2290%22&gt;%F0%9F%92%BB&lt;/text&gt;&lt;/svg&gt;"> <link rel="stylesheet" href="/assets/css/main.css?v=3116ba77db9ee1581d05bb3e86fbf7f1"> <link rel="canonical" href="https://www.nobudev7.com/blog/2023/SpringBootJar/"> <script src="/assets/js/theme.js?v=5286c3e4c334d0ecb8fc0c40ff4fa7ec"></script> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-native.css?v=5847e5ed4a4568527aa6cfab446049ca" media="none" id="highlight_theme_dark"> <script>
     initTheme();
-  </script> </head> <body class="fixed-top-nav "> <header> <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation"> <div class="container"> <a class="navbar-brand title font-weight-lighter" href="/"> Nobu’s Engineering Notebook </a> <button class="navbar-toggler collapsed navbar-toggler-main" type="button" data-nav-toggle="navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> <span class="sr-only">Toggle navigation</span> <span class="icon-bar top-bar"></span> <span class="icon-bar middle-bar"></span> <span class="icon-bar bottom-bar"></span> </button> <div class="collapse navbar-collapse navbar-collapse-main" id="navbarNav"> <ul class="navbar-nav navbar-menu-list flex-nowrap"> <li class="nav-item "> <a class="nav-link" href="/">about </a> </li> <li class="nav-item "> <a class="nav-link" href="/projects/">projects </a> </li> <li class="nav-item active"> <a class="nav-link" href="/blog/">blog </a> </li> <li class="nav-item"> <button id="search-toggle" type="button" title="Search" aria-label="Open search"> <span class="nav-link">ctrl k <i class="fa-solid fa-magnifying-glass"></i></span> </button> </li> <li class="toggle-container"> <button id="light-toggle" type="button" title="Change theme" aria-label="Change color theme"> <i class="fa-half-sun-moon" id="light-toggle-system"></i> <i class="fa-solid fa-moon" id="light-toggle-dark"></i> <i class="fa-solid fa-sun" id="light-toggle-light"></i> </button> </li> </ul> </div> </div> </nav> <progress id="progress" value="0"> <div class="progress-container"> <span class="progress-bar"></span> </div> </progress> </header> <div class="container mt-5" role="main"> <div class="post"> <header class="post-header"> <h1 class="post-title">Run a SpringBoot jar on Docker</h1> <p class="post-meta"> Created on August 22, 2023 </p> <p class="post-tags"> <a href="/blog/2023"> <i class="fa-solid fa-calendar fa-sm"></i> 2023 </a>   ·   <a href="/blog/tag/spring-boot"> <i class="fa-solid fa-hashtag fa-sm"></i> spring-boot</a>   <a href="/blog/tag/docker"> <i class="fa-solid fa-hashtag fa-sm"></i> docker</a>   <a href="/blog/tag/java"> <i class="fa-solid fa-hashtag fa-sm"></i> java</a>   ·   <a href="/blog/category/docker"> <i class="fa-solid fa-tag fa-sm"></i> docker</a>   <a href="/blog/category/spring"> <i class="fa-solid fa-tag fa-sm"></i> spring</a> </p> </header> <article class="post-content"> <div id="markdown-content"> <p>Some articles suggest to run a centos docker image to run SpringBoot app. Since CentOS is deprecated, I found that <a href="https://hub.docker.com/_/amazoncorretto" rel="external nofollow noopener" target="_blank">amazoncorretto</a> is an option.</p> <p>Dockerfile</p> <div class="language-docker highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">FROM</span><span class="s"> amazoncorretto:20</span>
+  </script> </head> <body class="fixed-top-nav "> <header> <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation"> <div class="container"> <a class="navbar-brand title font-weight-lighter" href="/"> Nobu’s Engineering Notebook </a> <button class="navbar-toggler collapsed navbar-toggler-main" type="button" data-nav-toggle="navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> <span class="sr-only">Toggle navigation</span> <span class="icon-bar top-bar"></span> <span class="icon-bar middle-bar"></span> <span class="icon-bar bottom-bar"></span> </button> <div class="collapse navbar-collapse navbar-collapse-main" id="navbarNav"> <ul class="navbar-nav navbar-menu-list flex-nowrap"> <li class="nav-item "> <a class="nav-link" href="/">about </a> </li> <li class="nav-item "> <a class="nav-link" href="/projects/">projects </a> </li> <li class="nav-item active"> <a class="nav-link" href="/blog/">blog </a> </li> <li class="nav-item"> <button id="search-toggle" type="button" title="Search" aria-label="Open search"> <span class="nav-link">ctrl k <i class="fa-solid fa-magnifying-glass"></i></span> </button> </li> <li class="toggle-container"> <button id="light-toggle" type="button" title="Change theme" aria-label="Change color theme"> <i class="fa-half-sun-moon" id="light-toggle-system"></i> <i class="fa-solid fa-moon" id="light-toggle-dark"></i> <i class="fa-solid fa-sun" id="light-toggle-light"></i> </button> </li> </ul> </div> </div> </nav> <progress id="progress" value="0"> <div class="progress-container"> <span class="progress-bar"></span> </div> </progress> </header> <div class="container mt-5" role="main"> <div class="post"> <header class="post-header"> <h1 class="post-title">Running a Spring Boot JAR on Docker with Amazon Corretto</h1> <p class="post-meta"> Created on August 22, 2023 </p> <p class="post-tags"> <a href="/blog/2023"> <i class="fa-solid fa-calendar fa-sm"></i> 2023 </a>   ·   <a href="/blog/tag/spring-boot"> <i class="fa-solid fa-hashtag fa-sm"></i> spring-boot</a>   <a href="/blog/tag/docker"> <i class="fa-solid fa-hashtag fa-sm"></i> docker</a>   <a href="/blog/tag/java"> <i class="fa-solid fa-hashtag fa-sm"></i> java</a>   ·   <a href="/blog/category/docker"> <i class="fa-solid fa-tag fa-sm"></i> docker</a>   <a href="/blog/category/spring"> <i class="fa-solid fa-tag fa-sm"></i> spring</a> </p> </header> <article class="post-content"> <div id="markdown-content"> <p>Some articles suggest using a CentOS base image to run a Spring Boot application in Docker. Since CentOS is deprecated, <a href="https://hub.docker.com/_/amazoncorretto" rel="external nofollow noopener" target="_blank">Amazon Corretto</a> provides a clean, supported OpenJDK alternative.</p> <p>Here is a quick reference for packaging and running a Spring Boot JAR with Amazon Corretto 20.</p> <h2 id="dockerfile">Dockerfile</h2> <div class="language-dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">FROM</span><span class="s"> amazoncorretto:20</span>
 
 <span class="k">VOLUME</span><span class="s"> [ "/data" ]</span>
 <span class="k">ADD</span><span class="s"> MySpringBootApp-0.0.1-SNAPSHOT.jar MySpringBootApp</span>
 <span class="k">RUN </span>sh <span class="nt">-c</span> <span class="s1">'touch /ValidatingFormInput.jar'</span>
 <span class="k">ENTRYPOINT</span><span class="s"> [ "java", "-jar", "/MySpringBootApp" ]</span>
-</code></pre></div></div> <p>Build Docker image</p> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ docker build -t myspringbootapp .  
-</code></pre></div></div> <p>Note that the Docker image name has to be lower case.</p> <p>Run the docker container</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>docker run <span class="nt">-p</span> 8080:8080 myspringbootapp
-
-  <span class="nb">.</span>   ____          _            __ _ _
- /<span class="se">\\</span> / ___<span class="s1">'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '</span>_ | <span class="s1">'_| | '</span>_ <span class="se">\/</span> _<span class="sb">`</span> | <span class="se">\ \ \ \</span>
- <span class="se">\\</span>/  ___<span class="o">)</span>| |_<span class="o">)</span>| | | | | <span class="o">||</span> <span class="o">(</span>_| |  <span class="o">)</span> <span class="o">)</span> <span class="o">)</span> <span class="o">)</span>
-  <span class="s1">'  |____| .__|_| |_|_| |_\__, | / / / /
+</code></pre></div></div> <h3 id="line-by-line-breakdown">Line-by-Line Breakdown</h3> <ul> <li> <code class="language-plaintext highlighter-rouge">FROM amazoncorretto:20</code>: Uses the official Amazon Corretto 20 image as the Java runtime environment.</li> <li> <code class="language-plaintext highlighter-rouge">VOLUME [ "/data" ]</code>: Mounts <code class="language-plaintext highlighter-rouge">/data</code> as an external volume for application data or logs.</li> <li> <code class="language-plaintext highlighter-rouge">ADD MySpringBootApp-0.0.1-SNAPSHOT.jar MySpringBootApp</code>: Copies the packaged JAR file into the container image.</li> <li> <code class="language-plaintext highlighter-rouge">RUN sh -c 'touch /ValidatingFormInput.jar'</code>: Updates the file modification timestamp for the application artifact.</li> <li> <code class="language-plaintext highlighter-rouge">ENTRYPOINT [ "java", "-jar", "/MySpringBootApp" ]</code>: Specifies the command executed when the container starts.</li> </ul> <h2 id="build-the-docker-image">Build the Docker Image</h2> <p>Build the container image from the directory containing the <code class="language-plaintext highlighter-rouge">Dockerfile</code>:</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>docker build <span class="nt">-t</span> myspringbootapp <span class="nb">.</span>
+</code></pre></div></div> <blockquote> <p><strong>Note:</strong> The Docker image name must be all lowercase. Using uppercase characters (like <code class="language-plaintext highlighter-rouge">MySpringBootApp</code>) will cause Docker to reject the tag name.</p> </blockquote> <h2 id="run-the-container">Run the Container</h2> <p>Run the container, mapping port <code class="language-plaintext highlighter-rouge">8080</code>:</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>docker run <span class="nt">-p</span> 8080:8080 myspringbootapp
+</code></pre></div></div> <p>The application starts up in under a second:</p> <div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.1.1)
 
-2023-08-22T00:41:04.306Z  INFO 1 --- [           main] i.s.s.V.MySpringBootAppApplication   : Starting MySpringBootAppApplication v0.0.1-SNAPSHOT using Java 20.0.2 with PID 1 (/MySpringBootAppApplication.jar started by root in /)
-2023-08-22T00:41:04.307Z  INFO 1 --- [           main] i.s.s.V.MySpringBootAppApplication   : No active profile set, falling back to 1 default profile: "default"
-2023-08-22T00:41:04.800Z  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
-2023-08-22T00:41:04.805Z  INFO 1 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2023-08-22T00:41:04.805Z  INFO 1 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.10]
-2023-08-22T00:41:04.838Z  INFO 1 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2023-08-22T00:41:04.838Z  INFO 1 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 505 ms
-2023-08-22T00:41:05.006Z  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
-2023-08-22T00:41:05.013Z  INFO 1 --- [           main] i.s.s.V.MySpringBootAppApplication   : Started MySpringBootAppApplication in 0.942 seconds (process running for 1.172)
-2023-08-22T00:41:18.153Z  INFO 1 --- [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet '</span>dispatcherServlet<span class="s1">'
-2023-08-22T00:41:18.153Z  INFO 1 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet '</span>dispatcherServlet<span class="s1">'
-2023-08-22T00:41:18.154Z  INFO 1 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
-
-</span></code></pre></div></div> </div> </article> <br> <hr> <br> <h2 class="text-3xl font-semibold mb-4 mt-12">Enjoy Reading This Article?</h2> <p class="mb-2">Here are some more articles you might like to read next:</p> <ul class="list-disc pl-7 my-3 space-y-2 marker:text-[var(--global-theme-color)]"> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2023/Docker-Memo-MySQL/">Docker Memo Mysql</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2024/AWS-Lightsail/">AWS Lightsail Java Server Setup Memo</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2024/Docker-Nginx-Demo/">Docker Nginx Demo</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Deploying-the-Java-Chart-Generator-to-AWS-Lambda-on-Schedule/">Deploying The Java Chart Generator To Aws Lambda On Schedule</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Exploring-Multi-Cloud-Deployments-Migrating-from-AWS-Lightsail-to-Oracle-Cloud-OCI/">Exploring Multi-Cloud Deployments: Migrating from AWS Lightsail to Oracle Cloud (OCI)</a> </li> </ul> </div> </div> <footer class="fixed-bottom" role="contentinfo"> <div class="container mt-0"> © Copyright 2026 Nobu . Powered by <a href="https://jekyllrb.com/" target="_blank" rel="external nofollow noopener">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" rel="external nofollow noopener" target="_blank">al-folio</a> theme. </div> </footer> <script>
+INFO 1 --- [main] c.e.demo.MySpringBootAppApplication     : Starting MySpringBootAppApplication v0.0.1-SNAPSHOT using Java 20.0.2...
+INFO 1 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer : Tomcat started on port(s): 8080 (http) with context path ''
+INFO 1 --- [main] c.e.demo.MySpringBootAppApplication     : Started MySpringBootAppApplication in 0.942 seconds
+</code></pre></div></div> </div> </article> <br> <hr> <br> <h2 class="text-3xl font-semibold mb-4 mt-12">Enjoy Reading This Article?</h2> <p class="mb-2">Here are some more articles you might like to read next:</p> <ul class="list-disc pl-7 my-3 space-y-2 marker:text-[var(--global-theme-color)]"> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Deploying-the-Java-Chart-Generator-to-AWS-Lambda-on-Schedule/">Deploying The Java Chart Generator To Aws Lambda On Schedule</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2024/AWS-Lightsail/">AWS Lightsail Java Server Setup Memo</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Exploring-Multi-Cloud-Deployments-Migrating-from-AWS-Lightsail-to-Oracle-Cloud-OCI/">Exploring Multi-Cloud Deployments: Migrating from AWS Lightsail to Oracle Cloud (OCI)</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2023/Spring/">Spring Boot: Multiple Primary Keys via JPA</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2024/Docker-Nginx-Demo/">Docker Nginx Demo</a> </li> </ul> </div> </div> <footer class="fixed-bottom" role="contentinfo"> <div class="container mt-0"> © Copyright 2026 Nobu . Powered by <a href="https://jekyllrb.com/" target="_blank" rel="external nofollow noopener">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" rel="external nofollow noopener" target="_blank">al-folio</a> theme. </div> </footer> <script>
   window.alFolio = {
     compatBootstrap: false
   };
@@ -242,9 +231,9 @@ ninja.data = [{
             window.location.href = "/blog/2024/Docker-Nginx-Demo/";
           
         },
-      },{id: "post-my-java-memo",
+      },{id: "post-java-21-gotcha-resolving-quot-cannot-find-symbol-method-getfirst-quot-in-intellij",
         
-          title: "My Java Memo",
+          title: "Java 21 Gotcha: Resolving &quot;cannot find symbol: method getFirst()&quot; in IntelliJ",
         
         description: "",
         section: "Posts",
@@ -253,9 +242,9 @@ ninja.data = [{
             window.location.href = "/blog/2023/My-Java-Memo/";
           
         },
-      },{id: "post-installing-streamlit-on-mac",
+      },{id: "post-journal-memo-streamlit-prototyping-on-macos-and-the-homebrew-python-gotcha",
         
-          title: "Installing Streamlit On Mac",
+          title: "Journal Memo: Streamlit Prototyping on macOS and the Homebrew Python Gotcha",
         
         description: "",
         section: "Posts",
@@ -275,48 +264,15 @@ ninja.data = [{
             window.location.href = "/blog/2023/Spring/";
           
         },
-      },{id: "post-docker-memo-mysql",
+      },{id: "post-running-a-spring-boot-jar-on-docker-with-amazon-corretto",
         
-          title: "Docker Memo Mysql",
-        
-        description: "",
-        section: "Posts",
-        handler: () => {
-          
-            window.location.href = "/blog/2023/Docker-Memo-MySQL/";
-          
-        },
-      },{id: "post-run-a-springboot-jar-on-docker",
-        
-          title: "Run a SpringBoot jar on Docker",
+          title: "Running a Spring Boot JAR on Docker with Amazon Corretto",
         
         description: "",
         section: "Posts",
         handler: () => {
           
             window.location.href = "/blog/2023/SpringBootJar/";
-          
-        },
-      },{id: "post-set-up-react-on-mac",
-        
-          title: "Set up React on Mac",
-        
-        description: "",
-        section: "Posts",
-        handler: () => {
-          
-            window.location.href = "/blog/2023/React-On-Mac/";
-          
-        },
-      },{id: "post-setting-up-intellij-community-edition",
-        
-          title: "Setting up IntelliJ Community Edition",
-        
-        description: "",
-        section: "Posts",
-        handler: () => {
-          
-            window.location.href = "/blog/2023/IntelliJ/";
           
         },
       },{id: "projects-pilambdachart",

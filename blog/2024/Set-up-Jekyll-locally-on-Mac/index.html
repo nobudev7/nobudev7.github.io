@@ -44,7 +44,7 @@ chruby ruby-3.1.3
 </code></pre></div></div> <p>The solution is to place those files under <code class="language-plaintext highlighter-rouge">_layouts</code> folder, <em>or</em> change the <code class="language-plaintext highlighter-rouge">layout</code> in the post itself to something that exist. A simple way I took was to copy those files from the theme’s repo.</p> <p><a href="https://github.com/pages-themes/cayman/blob/master/_layouts/default.html" rel="external nofollow noopener" target="_blank">Cayman theme default.html</a> <a href="https://github.com/jekyll/minima/tree/master/_layouts" rel="external nofollow noopener" target="_blank">Minima Theme Layouts</a></p> <p>What I see a problem of Jekyll is that, because the content file specifies the layout template, and each theme name layout file differently, it is harder to maintain the integrity, and quite frankly, it failed to be a good web framework as the markdown, or its front matter, is not portable between themes. However, Jekyll is the default action for GitHub Pages, and I’ll adapt to it.</p> <p><strong>Update</strong> I decided to go back to minima theme, however, from <a href="https://github.com/jekyll/minima/blob/master/README.md" rel="external nofollow noopener" target="_blank">Jekyll Repo</a> to use version 3. See my commit at <a href="https://github.com/nobudev7/nobudev7.github.io/commit/6ed9871c2d804077091aca325bad0d7a39f0a0aa" rel="external nofollow noopener" target="_blank">https://github.com/nobudev7/nobudev7.github.io/commit/6ed9871c2d804077091aca325bad0d7a39f0a0aa</a></p> <h3 id="syntax-highlight">Syntax highlight</h3> <p>The default minima or rouge syntax highlighting is not that attractive in color. I changed it to <code class="language-plaintext highlighter-rouge">thankful_eyes</code>. See other theme at <a href="https://spsarolkar.github.io/rouge-theme-preview/" rel="external nofollow noopener" target="_blank">Rouge Theme Preview Page</a>. To do so, you need to create a custom <code class="language-plaintext highlighter-rouge">scss</code> file for the theme (As noted, I’m already on Minima V3 at this point).</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>rougify style thankful_eyes <span class="o">&gt;</span> _sass/minima/custom-styles.scss 
 </code></pre></div></div> <p>This will generate the necessary override in syntax coloring, however, the background in <code class="language-plaintext highlighter-rouge">&lt;code&gt;</code> block is still pale pink. To change that, additional theming is required. Add the following to the <code class="language-plaintext highlighter-rouge">custom-styles.scss</code> file. Change the color to match with the background color of <code class="language-plaintext highlighter-rouge">.highlight</code> section that the <code class="language-plaintext highlighter-rouge">rougify</code> command generated.</p> <div class="language-css highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">.highlighter-rouge</span> <span class="nc">.highlight</span><span class="o">,</span>
 <span class="nc">.highlighter-rouge</span> <span class="nc">.highlight</span> <span class="nt">code</span> <span class="p">{</span> <span class="nl">background</span><span class="p">:</span> <span class="nx">#122b3b</span><span class="p">;</span> <span class="p">}</span>
-</code></pre></div></div> <h4 id="references">References</h4> <ul> <li><a href="https://stackoverflow.com/questions/48728510/jekyll-remote-theme-doesnt-work-locally" rel="external nofollow noopener" target="_blank">Jekyll remote theme doesn’t work locally</a></li> <li><a href="https://stackoverflow.com/questions/30837079/using-jekyll-for-website-without-blog" rel="external nofollow noopener" target="_blank">Using Jekyll for Website without Blog</a></li> <li> <a href="https://www.markdownguide.org/tools/github-pages/" rel="external nofollow noopener" target="_blank">GitHub Pages</a> List of Markdown element support</li> </ul> </div> </article> <br> <hr> <br> <h2 class="text-3xl font-semibold mb-4 mt-12">Enjoy Reading This Article?</h2> <p class="mb-2">Here are some more articles you might like to read next:</p> <ul class="list-disc pl-7 my-3 space-y-2 marker:text-[var(--global-theme-color)]"> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2024/AWS-Lightsail/">AWS Lightsail Java Server Setup Memo</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Using-Muse-as-a-Coding-Agent-From-a-VM-Clone-to-a-Merged-Pull-Request/">Using Muse as a Coding Agent: From a VM Clone to a Merged Pull Request</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2024/VS-Code-Snippet-In-Front-Matter/">Vs Code Snippet In Front Matter</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/PiLambdaChart-Building-a-Serverless-IoT-Dashboard-with-Raspberry-Pi-and-AWS/">PiLambdaChart: Building a Serverless IoT Dashboard with Raspberry Pi and AWS</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Migrating-to-Serverless-Raspberry-Pi-to-DynamoDB-plus-Lambda-Function-for-Chart-Generation/">Migrating To Serverless: Raspberry Pi To Dynamodb Plus Lambda Function For Chart Generation</a> </li> </ul> </div> </div> <footer class="fixed-bottom" role="contentinfo"> <div class="container mt-0"> © Copyright 2026 Nobu . Powered by <a href="https://jekyllrb.com/" target="_blank" rel="external nofollow noopener">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" rel="external nofollow noopener" target="_blank">al-folio</a> theme. </div> </footer> <script>
+</code></pre></div></div> <h4 id="references">References</h4> <ul> <li><a href="https://stackoverflow.com/questions/48728510/jekyll-remote-theme-doesnt-work-locally" rel="external nofollow noopener" target="_blank">Jekyll remote theme doesn’t work locally</a></li> <li><a href="https://stackoverflow.com/questions/30837079/using-jekyll-for-website-without-blog" rel="external nofollow noopener" target="_blank">Using Jekyll for Website without Blog</a></li> <li> <a href="https://www.markdownguide.org/tools/github-pages/" rel="external nofollow noopener" target="_blank">GitHub Pages</a> List of Markdown element support</li> </ul> </div> </article> <br> <hr> <br> <h2 class="text-3xl font-semibold mb-4 mt-12">Enjoy Reading This Article?</h2> <p class="mb-2">Here are some more articles you might like to read next:</p> <ul class="list-disc pl-7 my-3 space-y-2 marker:text-[var(--global-theme-color)]"> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2024/AWS-Lightsail/">AWS Lightsail Java Server Setup Memo</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Using-Muse-as-a-Coding-Agent-From-a-VM-Clone-to-a-Merged-Pull-Request/">Using Muse as a Coding Agent: From a VM Clone to a Merged Pull Request</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2024/VS-Code-Snippet-In-Front-Matter/">Vs Code Snippet In Front Matter</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/PiLambdaChart-Building-a-Serverless-IoT-Dashboard-with-Raspberry-Pi-and-AWS/">PiLambdaChart: Building a Serverless IoT Dashboard with Raspberry Pi and AWS</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/AWS-Serverless-Sump-Chart/">Aws Serverless Sump Chart</a> </li> </ul> </div> </div> <footer class="fixed-bottom" role="contentinfo"> <div class="container mt-0"> © Copyright 2026 Nobu . Powered by <a href="https://jekyllrb.com/" target="_blank" rel="external nofollow noopener">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" rel="external nofollow noopener" target="_blank">al-folio</a> theme. </div> </footer> <script>
   window.alFolio = {
     compatBootstrap: false
   };
@@ -252,9 +252,9 @@ ninja.data = [{
             window.location.href = "/blog/2024/Docker-Nginx-Demo/";
           
         },
-      },{id: "post-my-java-memo",
+      },{id: "post-java-21-gotcha-resolving-quot-cannot-find-symbol-method-getfirst-quot-in-intellij",
         
-          title: "My Java Memo",
+          title: "Java 21 Gotcha: Resolving &quot;cannot find symbol: method getFirst()&quot; in IntelliJ",
         
         description: "",
         section: "Posts",
@@ -263,9 +263,9 @@ ninja.data = [{
             window.location.href = "/blog/2023/My-Java-Memo/";
           
         },
-      },{id: "post-installing-streamlit-on-mac",
+      },{id: "post-journal-memo-streamlit-prototyping-on-macos-and-the-homebrew-python-gotcha",
         
-          title: "Installing Streamlit On Mac",
+          title: "Journal Memo: Streamlit Prototyping on macOS and the Homebrew Python Gotcha",
         
         description: "",
         section: "Posts",
@@ -285,48 +285,15 @@ ninja.data = [{
             window.location.href = "/blog/2023/Spring/";
           
         },
-      },{id: "post-docker-memo-mysql",
+      },{id: "post-running-a-spring-boot-jar-on-docker-with-amazon-corretto",
         
-          title: "Docker Memo Mysql",
-        
-        description: "",
-        section: "Posts",
-        handler: () => {
-          
-            window.location.href = "/blog/2023/Docker-Memo-MySQL/";
-          
-        },
-      },{id: "post-run-a-springboot-jar-on-docker",
-        
-          title: "Run a SpringBoot jar on Docker",
+          title: "Running a Spring Boot JAR on Docker with Amazon Corretto",
         
         description: "",
         section: "Posts",
         handler: () => {
           
             window.location.href = "/blog/2023/SpringBootJar/";
-          
-        },
-      },{id: "post-set-up-react-on-mac",
-        
-          title: "Set up React on Mac",
-        
-        description: "",
-        section: "Posts",
-        handler: () => {
-          
-            window.location.href = "/blog/2023/React-On-Mac/";
-          
-        },
-      },{id: "post-setting-up-intellij-community-edition",
-        
-          title: "Setting up IntelliJ Community Edition",
-        
-        description: "",
-        section: "Posts",
-        handler: () => {
-          
-            window.location.href = "/blog/2023/IntelliJ/";
           
         },
       },{id: "projects-pilambdachart",
