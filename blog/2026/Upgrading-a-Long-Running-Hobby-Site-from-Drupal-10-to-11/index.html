@@ -1,0 +1,397 @@
+<!DOCTYPE html> <html lang="en"> <head> <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <title> Upgrading a Long-Running Hobby Site from Drupal 10 to 11 | Nobu’s Engineering Notebook </title> <meta name="author" content="Nobu "> <meta name="description" content="A practical walkthrough of an in-place upgrade from Drupal 10.6 to 11.4 in two days—covering two-stage Composer preparation, Lando database updates, jQuery 4 compatibility with Bootstrap 4, and subtle contrib module breaking changes."> <meta name="keywords" content="java, spring-boot, aws, raspberry-pi, serverless, docker"> <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; media-src 'self' https:; frame-src 'self' https:; connect-src 'self' https:;"> <style>
+  :root {
+    --max-content-width: 930px;
+  }
+</style> <link rel="stylesheet" href="/assets/css/tailwind.css?v=50c64c15cbb9fd1ce6056fdb8bcb4b62"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css" integrity="sha256-MVopmdyC2tYTiJ8wlktf0uh0v4NgT+vNdyVFepi7Q0c=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/academicons@1.9.5/css/academicons.min.css" integrity="sha256-SzrCOBJbGVFMahewkgjwnApaV2+av1DwMAA+/QGLyZw=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/scholar-icons@1.0.3/css/scholar-icons.css" integrity="sha256-VY3hHVj/hNX3fYG6wtbA6TcKJQl7+FthzGSyIB64klY=" crossorigin="anonymous"> <link defer rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Material+Icons&amp;display=swap"> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-github.css?v=591dab5a4e56573bf4ef7fd332894c99" media="" id="highlight_theme_light"> <link rel="shortcut icon" href="data:image/svg+xml,&lt;svg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22&gt;&lt;text%20y=%22.9em%22%20font-size=%2290%22&gt;%F0%9F%92%BB&lt;/text&gt;&lt;/svg&gt;"> <link rel="stylesheet" href="/assets/css/main.css?v=3116ba77db9ee1581d05bb3e86fbf7f1"> <link rel="canonical" href="https://www.nobudev7.com/blog/2026/Upgrading-a-Long-Running-Hobby-Site-from-Drupal-10-to-11/"> <script src="/assets/js/theme.js?v=5286c3e4c334d0ecb8fc0c40ff4fa7ec"></script> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-native.css?v=5847e5ed4a4568527aa6cfab446049ca" media="none" id="highlight_theme_dark"> <script>
+    initTheme();
+  </script> </head> <body class="fixed-top-nav "> <header> <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation"> <div class="container"> <a class="navbar-brand title font-weight-lighter" href="/"> Nobu’s Engineering Notebook </a> <button class="navbar-toggler collapsed navbar-toggler-main" type="button" data-nav-toggle="navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> <span class="sr-only">Toggle navigation</span> <span class="icon-bar top-bar"></span> <span class="icon-bar middle-bar"></span> <span class="icon-bar bottom-bar"></span> </button> <div class="collapse navbar-collapse navbar-collapse-main" id="navbarNav"> <ul class="navbar-nav navbar-menu-list flex-nowrap"> <li class="nav-item "> <a class="nav-link" href="/">about </a> </li> <li class="nav-item "> <a class="nav-link" href="/projects/">projects </a> </li> <li class="nav-item active"> <a class="nav-link" href="/blog/">blog </a> </li> <li class="nav-item"> <button id="search-toggle" type="button" title="Search" aria-label="Open search"> <span class="nav-link">ctrl k <i class="fa-solid fa-magnifying-glass"></i></span> </button> </li> <li class="toggle-container"> <button id="light-toggle" type="button" title="Change theme" aria-label="Change color theme"> <i class="fa-half-sun-moon" id="light-toggle-system"></i> <i class="fa-solid fa-moon" id="light-toggle-dark"></i> <i class="fa-solid fa-sun" id="light-toggle-light"></i> </button> </li> </ul> </div> </div> </nav> <progress id="progress" value="0"> <div class="progress-container"> <span class="progress-bar"></span> </div> </progress> </header> <div class="container mt-5" role="main"> <div class="post"> <header class="post-header"> <h1 class="post-title">Upgrading a Long-Running Hobby Site from Drupal 10 to 11</h1> <p class="post-meta"> Created on November 14, 2026 </p> <p class="post-tags"> <a href="/blog/2026"> <i class="fa-solid fa-calendar fa-sm"></i> 2026 </a>   ·   <a href="/blog/tag/drupal"> <i class="fa-solid fa-hashtag fa-sm"></i> drupal</a>   <a href="/blog/tag/php"> <i class="fa-solid fa-hashtag fa-sm"></i> php</a>   <a href="/blog/tag/devops"> <i class="fa-solid fa-hashtag fa-sm"></i> devops</a>   <a href="/blog/tag/ai"> <i class="fa-solid fa-hashtag fa-sm"></i> ai</a>   ·   <a href="/blog/category/web"> <i class="fa-solid fa-tag fa-sm"></i> web</a>   <a href="/blog/category/devops"> <i class="fa-solid fa-tag fa-sm"></i> devops</a>   <a href="/blog/category/php"> <i class="fa-solid fa-tag fa-sm"></i> php</a> </p> </header> <article class="post-content"> <div id="markdown-content"> <h2 id="background-three-generations-of-drupal-upgrades">Background: Three Generations of Drupal Upgrades</h2> <p>I have maintained a long-running Drupal hobby site across several major versions: first upgrading from <strong>Drupal 7 to 9</strong>, later from <strong>Drupal 9 to 10</strong>, and most recently from <strong>Drupal 10.6 to 11.4</strong>.</p> <p>Each transition had a very different engineering profile:</p> <ul> <li> <strong>Drupal 7 → 9</strong> took a significant amount of time. Because Drupal 8+ introduced a completely different architecture built on Symfony, Twig, and an entity/configuration system, moving off Drupal 7 was not an in-place upgrade—it required rebuilding the theme and running a full data and configuration migration.</li> <li> <strong>Drupal 9 → 10</strong> was much simpler by comparison, primarily involving deprecated API replacements and Composer dependency updates.</li> <li> <strong>Drupal 10 → 11</strong> (<code class="language-plaintext highlighter-rouge">10.6.21</code> → <code class="language-plaintext highlighter-rouge">11.4.12</code>) took <strong>just 2 days total</strong> from initial codebase audit and local Lando testing to production deployment.</li> </ul> <p>Working with an AI coding agent during this upgrade compressed the timeline considerably. Before I ran a single Composer command, the agent audited all custom modules, theme templates, JavaScript libraries, and contributed module constraints, organized the work into a two-stage checklist, and flagged several subtle breaking changes that would have otherwise taken hours to debug manually.</p> <hr> <h2 id="what-it-takes-an-in-place-upgrade">What It Takes: An In-Place Upgrade</h2> <p>Unlike the Drupal 7 migration era, upgrading from Drupal 10 to Drupal 11 is a true <strong>in-place upgrade</strong>. All content, users, taxonomy terms, book outlines, and entity schemas remain in the existing database. The upgrade is executed through Composer package updates followed by <code class="language-plaintext highlighter-rouge">drush updatedb</code> and <code class="language-plaintext highlighter-rouge">drush cr</code>.</p> <h3 id="1-environment--database-prerequisites">1. Environment &amp; Database Prerequisites</h3> <p>Drupal 11 raises the minimum runtime requirements to <strong>PHP 8.3+</strong> and <strong>MySQL 8.0+ / MariaDB 10.6+</strong>.</p> <ul> <li> <strong>Production:</strong> My production server was already running <strong>PHP 8.4</strong> and <strong>MariaDB 10.11</strong>, so no OS or database server upgrades were needed on the host.</li> <li> <strong>Local Development (Lando):</strong> My local Lando environment was still configured with <code class="language-plaintext highlighter-rouge">mysql:5.7</code> from an older recipe. Updating <code class="language-plaintext highlighter-rouge">.lando.yml</code> to use <code class="language-plaintext highlighter-rouge">database: mysql:8.0</code> and importing a fresh production database dump aligned the local environment with Drupal 11’s requirements.</li> </ul> <h3 id="2-settingsphp-updates-for-drupal-11">2. <code class="language-plaintext highlighter-rouge">settings.php</code> Updates for Drupal 11</h3> <p>To clear Drupal 11 status report warnings and follow current database best practices, three adjustments were added to <code class="language-plaintext highlighter-rouge">sites/default/settings.php</code>:</p> <ol> <li> <strong>Transaction Isolation Level (<code class="language-plaintext highlighter-rouge">READ COMMITTED</code>):</strong> Configured via <code class="language-plaintext highlighter-rouge">init_commands</code> on the database connection array to avoid unnecessary gap locks: <div class="language-php highlighter-rouge"> <div class="highlight"><pre class="highlight"><code><span class="nv">$databases</span><span class="p">[</span><span class="s1">'default'</span><span class="p">][</span><span class="s1">'default'</span><span class="p">][</span><span class="s1">'init_commands'</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+  <span class="s1">'isolation_level'</span> <span class="o">=&gt;</span> <span class="s2">"SET SESSION transaction_isolation='READ-COMMITTED'"</span><span class="p">,</span>
+<span class="p">];</span>
+</code></pre></div> </div> </li> <li> <strong>Explicit Database Driver Autoloading:</strong> Added the explicit <code class="language-plaintext highlighter-rouge">Drupal\mysql\Driver\Database\mysql</code> namespace and <code class="language-plaintext highlighter-rouge">autoload</code> path (<code class="language-plaintext highlighter-rouge">core/modules/mysql/src/Driver/Database/mysql/</code>).</li> <li> <strong>State Cache:</strong> Enabled <code class="language-plaintext highlighter-rouge">$settings['state_cache'] = TRUE;</code>, which Drupal 11 recommends for sites with a small state table to reduce database queries on every request.</li> </ol> <hr> <h2 id="two-stage-upgrade-strategy">Two-Stage Upgrade Strategy</h2> <p>Rather than jumping directly to Drupal 11 in a single Composer transaction, splitting the upgrade into two distinct stages kept dependency resolution predictable and allowed database update hooks to run cleanly.</p> <table> <thead> <tr> <th style="text-align: left">Stage</th> <th style="text-align: left">Target Core</th> <th style="text-align: left">Key Actions</th> </tr> </thead> <tbody> <tr> <td style="text-align: left"><strong>Stage A: Drupal 10 Prep</strong></td> <td style="text-align: left"><code class="language-plaintext highlighter-rouge">10.6.21</code></td> <td style="text-align: left">Transition removed core modules (<code class="language-plaintext highlighter-rouge">book</code>, <code class="language-plaintext highlighter-rouge">tour</code>), upgrade blocking contrib packages, update custom code for D11 compatibility</td> </tr> <tr> <td style="text-align: left"><strong>Stage B: Drupal 11 Upgrade</strong></td> <td style="text-align: left"><code class="language-plaintext highlighter-rouge">11.4.12</code></td> <td style="text-align: left">Upgrade <code class="language-plaintext highlighter-rouge">drupal/core-*</code>, <code class="language-plaintext highlighter-rouge">drush/drush</code>, Symfony <code class="language-plaintext highlighter-rouge">7.4</code>, and add jQuery 4 compatibility for the legacy Bootstrap 4 theme</td> </tr> </tbody> </table> <h3 id="stage-a-preparation-on-drupal-106">Stage A: Preparation on Drupal 10.6</h3> <ol> <li> <strong>Handling Core Modules Removed in Drupal 11:</strong> <ul> <li> <strong><code class="language-plaintext highlighter-rouge">book</code> module:</strong> Drupal 11 moved the core Book module to contrib (<code class="language-plaintext highlighter-rouge">drupal/book</code>). While still on Drupal 10.6, requiring <code class="language-plaintext highlighter-rouge">drupal/book:^2.0</code> via Composer allowed the contributed module to take over existing <code class="language-plaintext highlighter-rouge">book</code> database tables and outlines without data loss.</li> <li> <strong><code class="language-plaintext highlighter-rouge">tour</code> module:</strong> The core Tour module was also removed in Drupal 11. Because the site did not use it, running <code class="language-plaintext highlighter-rouge">drush pm:uninstall tour -y</code> on Drupal 10 cleanly removed its configuration before upgrading core.</li> </ul> </li> <li> <strong>Upgrading Blocking Contrib Packages:</strong> <ul> <li>Upgraded <code class="language-plaintext highlighter-rouge">composer/installers</code> (<code class="language-plaintext highlighter-rouge">v1.12</code> → <code class="language-plaintext highlighter-rouge">v2.3</code>)</li> <li>Upgraded <code class="language-plaintext highlighter-rouge">drupal/field_validation</code> (<code class="language-plaintext highlighter-rouge">1.x</code> → <code class="language-plaintext highlighter-rouge">3.0.0</code>)</li> <li>Upgraded <code class="language-plaintext highlighter-rouge">drupal/google_cse</code> (<code class="language-plaintext highlighter-rouge">3.x</code> → <code class="language-plaintext highlighter-rouge">5.0.6</code>)</li> </ul> </li> <li> <strong>Custom Module &amp; Theme Compatibility:</strong> <ul> <li>Updated custom module and subtheme <code class="language-plaintext highlighter-rouge">.info.yml</code> files to <code class="language-plaintext highlighter-rouge">core_version_requirement: ^10 || ^11</code>.</li> <li>Replaced the deprecated <code class="language-plaintext highlighter-rouge">user_load_by_name()</code> helper in custom form validation code (removed in Drupal 11) with the entity storage query: <div class="language-php highlighter-rouge"> <div class="highlight"><pre class="highlight"><code><span class="nv">$users</span> <span class="o">=</span> <span class="nc">\Drupal</span><span class="o">::</span><span class="nf">entityTypeManager</span><span class="p">()</span>
+  <span class="o">-&gt;</span><span class="nf">getStorage</span><span class="p">(</span><span class="s1">'user'</span><span class="p">)</span>
+  <span class="o">-&gt;</span><span class="nf">loadByProperties</span><span class="p">([</span><span class="s1">'name'</span> <span class="o">=&gt;</span> <span class="nv">$entered_name</span><span class="p">]);</span>
+<span class="nv">$account</span> <span class="o">=</span> <span class="nb">reset</span><span class="p">(</span><span class="nv">$users</span><span class="p">);</span>
+</code></pre></div> </div> </li> </ul> </li> </ol> <h3 id="stage-b-upgrading-core-to-drupal-114">Stage B: Upgrading Core to Drupal 11.4</h3> <p>With all contrib modules and custom code compatible with both Drupal 10 and 11, the core upgrade in <code class="language-plaintext highlighter-rouge">composer.json</code> was straightforward:</p> <ul> <li> <code class="language-plaintext highlighter-rouge">drupal/core-recommended</code>, <code class="language-plaintext highlighter-rouge">drupal/core-composer-scaffold</code>, and <code class="language-plaintext highlighter-rouge">drupal/core-project-message</code>: <code class="language-plaintext highlighter-rouge">10.6.21</code> → <code class="language-plaintext highlighter-rouge">11.4.12</code> (bringing in <strong>Symfony 7.4</strong>)</li> <li> <code class="language-plaintext highlighter-rouge">drush/drush</code>: <code class="language-plaintext highlighter-rouge">^12.5</code> → <code class="language-plaintext highlighter-rouge">^13.8</code> </li> <li> <code class="language-plaintext highlighter-rouge">drupal/bootstrap_barrio</code>: <code class="language-plaintext highlighter-rouge">5.5.20</code> → <code class="language-plaintext highlighter-rouge">5.5.22</code> </li> </ul> <p>Running <code class="language-plaintext highlighter-rouge">composer update -W</code> and <code class="language-plaintext highlighter-rouge">drush updatedb -y</code> completed the core schema and configuration updates cleanly.</p> <hr> <h2 id="subtle-issues-caught-along-the-way">Subtle Issues Caught Along the Way</h2> <p>Several non-obvious issues surfaced during local testing and deployment. Having an AI agent inspect the plugin definitions, display configurations, and browser console errors saved significant troubleshooting time.</p> <h3 id="1-drupalbook-20-hid-the-book-outline-navigation">1. <code class="language-plaintext highlighter-rouge">drupal/book 2.0</code> Hid the Book Outline Navigation</h3> <p>After switching from the core <code class="language-plaintext highlighter-rouge">book</code> module to contrib <code class="language-plaintext highlighter-rouge">drupal/book 2.0.x</code> and running <code class="language-plaintext highlighter-rouge">drush updatedb</code>, the book navigation block at the bottom of book pages (the child page tree and previous/up/next links) disappeared.</p> <p><strong>Cause:</strong> <code class="language-plaintext highlighter-rouge">drupal/book 2.0</code> converts the hardcoded book navigation into a configurable extra field (<code class="language-plaintext highlighter-rouge">book_navigation</code>) on the node entity view display, and its update hook places that component in the <code class="language-plaintext highlighter-rouge">hidden</code> region by default.</p> <p><strong>Fix:</strong> Re-enabling the <code class="language-plaintext highlighter-rouge">book_navigation</code> component on the <code class="language-plaintext highlighter-rouge">node.book.default</code> entity view display restored the bottom navigation immediately without modifying any Twig templates:</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>drush php:eval <span class="s2">"
+</span><span class="se">\$</span><span class="s2">display = </span><span class="se">\D</span><span class="s2">rupal::entityTypeManager()
+  -&gt;getStorage('entity_view_display')
+  -&gt;load('node.book.default');
+</span><span class="se">\$</span><span class="s2">display-&gt;setComponent('book_navigation', [
+  'weight' =&gt; 100,
+  'region' =&gt; 'content',
+])-&gt;save();
+"</span>
+</code></pre></div></div> <h3 id="2-drupalfield_validation-1x--300-pluginnotfoundexception">2. <code class="language-plaintext highlighter-rouge">drupal/field_validation</code> 1.x → 3.0.0 (<code class="language-plaintext highlighter-rouge">PluginNotFoundException</code>)</h3> <p>Upgrading <code class="language-plaintext highlighter-rouge">drupal/field_validation</code> from <code class="language-plaintext highlighter-rouge">1.x</code> to <code class="language-plaintext highlighter-rouge">3.0.0</code> initially failed during <code class="language-plaintext highlighter-rouge">drush updatedb</code> with:</p> <div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Drupal\Component\Plugin\Exception\PluginNotFoundException: The "regex_field_validation_rule" plugin does not exist.
+</code></pre></div></div> <p><strong>Cause:</strong> Version <code class="language-plaintext highlighter-rouge">3.0.0</code> renamed its core validation plugins and moved the legacy <code class="language-plaintext highlighter-rouge">1.x</code> plugin IDs (<code class="language-plaintext highlighter-rouge">regex_field_validation_rule</code>, <code class="language-plaintext highlighter-rouge">length_field_validation_rule</code>) into a bundled <code class="language-plaintext highlighter-rouge">field_validation_legacy</code> submodule.</p> <p><strong>Fix:</strong> Enabling the legacy submodule (<code class="language-plaintext highlighter-rouge">drush pm:enable field_validation_legacy -y</code>) before running <code class="language-plaintext highlighter-rouge">drush updatedb</code> allowed existing field validation rule sets to continue working without recreating configuration.</p> <h3 id="3-jquery-40-in-drupal-11-vs-legacy-bootstrap-4-theme">3. jQuery 4.0 in Drupal 11 vs. Legacy Bootstrap 4 Theme</h3> <p>The site uses a custom subtheme based on <code class="language-plaintext highlighter-rouge">bootstrap_barrio</code> with <strong>Bootstrap 4.5.0</strong>. Upgrading to Drupal 11 broke interactive Bootstrap 4 components (such as modal dialogs) due to two separate changes:</p> <ol> <li> <strong>Missing <code class="language-plaintext highlighter-rouge">core/jquery</code> Dependency in <code class="language-plaintext highlighter-rouge">bootstrap_barrio</code>:</strong> Starting in <code class="language-plaintext highlighter-rouge">bootstrap_barrio 5.5.20</code>, the base theme dropped <code class="language-plaintext highlighter-rouge">core/jquery</code> from its <code class="language-plaintext highlighter-rouge">global-styling</code> library definition. On pages where no other module requested jQuery, <code class="language-plaintext highlighter-rouge">bootstrap.min.js</code> loaded without <code class="language-plaintext highlighter-rouge">window.jQuery</code>. Adding explicit <code class="language-plaintext highlighter-rouge">core/jquery</code> and <code class="language-plaintext highlighter-rouge">core/drupal</code> dependencies to the subtheme’s <code class="language-plaintext highlighter-rouge">.libraries.yml</code> ensured jQuery always loaded before Bootstrap.</li> <li> <strong>Bootstrap 4’s Hardcoded jQuery Version Check &amp; Removed Helpers:</strong> Drupal 11 upgraded core jQuery from <code class="language-plaintext highlighter-rouge">3.7.1</code> to <strong><code class="language-plaintext highlighter-rouge">4.0.0</code></strong>. Bootstrap 4.5.0 runs <code class="language-plaintext highlighter-rouge">Util.jQueryDetection()</code> on load, which checks the major version and throws: <div class="language-text highlighter-rouge"> <div class="highlight"><pre class="highlight"><code>TypeError: Bootstrap's JavaScript requires at least jQuery v1.9.1 but less than v4.0.0
+</code></pre></div> </div> <p>Additionally, Bootstrap 4 calls legacy jQuery utility methods (<code class="language-plaintext highlighter-rouge">$.isArray</code>, <code class="language-plaintext highlighter-rouge">$.trim</code>, <code class="language-plaintext highlighter-rouge">$.camelCase</code>) that were deprecated in jQuery 3 and removed in jQuery 4.0.</p> </li> </ol> <p><strong>Fix:</strong> Rather than turning a 2-day core upgrade into a full Bootstrap 5 theme rewrite, we added an 18-line compatibility shim (<code class="language-plaintext highlighter-rouge">jquery4-bootstrap4-compat.js</code>) loaded immediately before <code class="language-plaintext highlighter-rouge">bootstrap.min.js</code> in the subtheme library:</p> <div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="nf">function </span><span class="p">(</span><span class="nx">$</span><span class="p">)</span> <span class="p">{</span>
+  <span class="dl">'</span><span class="s1">use strict</span><span class="dl">'</span><span class="p">;</span>
+  <span class="k">if </span><span class="p">(</span><span class="o">!</span><span class="nx">$</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+
+  <span class="k">if </span><span class="p">(</span><span class="k">typeof</span> <span class="nx">$</span><span class="p">.</span><span class="nx">isArray</span> <span class="o">!==</span> <span class="dl">'</span><span class="s1">function</span><span class="dl">'</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">$</span><span class="p">.</span><span class="nx">isArray</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">isArray</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="k">if </span><span class="p">(</span><span class="k">typeof</span> <span class="nx">$</span><span class="p">.</span><span class="nx">trim</span> <span class="o">!==</span> <span class="dl">'</span><span class="s1">function</span><span class="dl">'</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">$</span><span class="p">.</span><span class="nx">trim</span> <span class="o">=</span> <span class="nf">function </span><span class="p">(</span><span class="nx">text</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">text</span> <span class="o">==</span> <span class="kc">null</span> <span class="p">?</span> <span class="dl">''</span> <span class="p">:</span> <span class="p">(</span><span class="nx">text</span> <span class="o">+</span> <span class="dl">''</span><span class="p">).</span><span class="nf">trim</span><span class="p">();</span>
+    <span class="p">};</span>
+  <span class="p">}</span>
+  <span class="k">if </span><span class="p">(</span><span class="k">typeof</span> <span class="nx">$</span><span class="p">.</span><span class="nx">camelCase</span> <span class="o">!==</span> <span class="dl">'</span><span class="s1">function</span><span class="dl">'</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">$</span><span class="p">.</span><span class="nx">camelCase</span> <span class="o">=</span> <span class="nf">function </span><span class="p">(</span><span class="nx">string</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return </span><span class="p">(</span><span class="nx">string</span> <span class="o">+</span> <span class="dl">''</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">replace</span><span class="p">(</span><span class="sr">/^-ms-/</span><span class="p">,</span> <span class="dl">'</span><span class="s1">ms-</span><span class="dl">'</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">replace</span><span class="p">(</span><span class="sr">/-</span><span class="se">([</span><span class="sr">a-z</span><span class="se">])</span><span class="sr">/g</span><span class="p">,</span> <span class="nf">function </span><span class="p">(</span><span class="nx">_all</span><span class="p">,</span> <span class="nx">letter</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">return</span> <span class="nx">letter</span><span class="p">.</span><span class="nf">toUpperCase</span><span class="p">();</span>
+        <span class="p">});</span>
+    <span class="p">};</span>
+  <span class="p">}</span>
+  <span class="k">if </span><span class="p">(</span><span class="nx">$</span><span class="p">.</span><span class="nx">fn</span> <span class="o">&amp;&amp;</span> <span class="nx">$</span><span class="p">.</span><span class="nx">fn</span><span class="p">.</span><span class="nx">jquery</span> <span class="o">&amp;&amp;</span> <span class="nx">$</span><span class="p">.</span><span class="nx">fn</span><span class="p">.</span><span class="nx">jquery</span><span class="p">.</span><span class="nf">indexOf</span><span class="p">(</span><span class="dl">'</span><span class="s1">4.</span><span class="dl">'</span><span class="p">)</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">$</span><span class="p">.</span><span class="nx">fn</span><span class="p">.</span><span class="nx">jquery</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">3.7.1-compat (</span><span class="dl">'</span> <span class="o">+</span> <span class="nx">$</span><span class="p">.</span><span class="nx">fn</span><span class="p">.</span><span class="nx">jquery</span> <span class="o">+</span> <span class="dl">'</span><span class="s1">)</span><span class="dl">'</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">})(</span><span class="nb">window</span><span class="p">.</span><span class="nx">jQuery</span><span class="p">);</span>
+</code></pre></div></div> <p>This polyfilled the three removed functions and satisfied Bootstrap 4’s version check while keeping Drupal 11’s native jQuery 4 runtime intact.</p> <h3 id="4-post-deploy-cron--sitesdefaultfiles-ownership">4. Post-Deploy Cron &amp; <code class="language-plaintext highlighter-rouge">sites/default/files</code> Ownership</h3> <p>Shortly after deploying to production, Drupal’s log reported a cron failure from the Feeds module:</p> <div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>RuntimeException: Feeds directory "public://feeds/in_progress/..." either cannot be created or is not writable.
+</code></pre></div></div> <p><strong>Cause:</strong> The server’s user crontab was executing <code class="language-plaintext highlighter-rouge">drush cron</code> as the SSH user rather than the web server user (<code class="language-plaintext highlighter-rouge">www-data</code>). Whenever CLI cron created subdirectories inside <code class="language-plaintext highlighter-rouge">sites/default/files/feeds</code>, they were owned by the SSH user with <code class="language-plaintext highlighter-rouge">0755</code> permissions, preventing Apache (<code class="language-plaintext highlighter-rouge">www-data</code>) from writing to them on subsequent web requests.</p> <p><strong>Fix:</strong> Setting ownership of <code class="language-plaintext highlighter-rouge">sites/default/files</code> to <code class="language-plaintext highlighter-rouge">www-data:www-data</code> with the setgid bit (<code class="language-plaintext highlighter-rouge">chmod 2775</code>) and updating the crontab entry to run Drush as <code class="language-plaintext highlighter-rouge">sudo -u www-data</code> permanently prevented permission drift between CLI and web processes.</p> <hr> <h2 id="production-deployment">Production Deployment</h2> <p>Because all dependency conflicts and schema updates were validated locally against a copy of the production database first, the production cutover took less than 15 minutes:</p> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 1. Back up database and enable maintenance mode</span>
+drush sql:dump <span class="nt">--gzip</span> <span class="nt">--result-file</span><span class="o">=</span>~/backups/pre-d11-upgrade.sql
+drush state:set system.maintenance_mode 1 <span class="nt">--input-format</span><span class="o">=</span>integer
+drush cr
+
+<span class="c"># 2. Pull two-stage commits and install production dependencies</span>
+git pull origin main
+composer <span class="nb">install</span> <span class="nt">--no-dev</span> <span class="nt">--optimize-autoloader</span>
+
+<span class="c"># 3. Apply database updates and disable maintenance mode</span>
+drush updatedb <span class="nt">-y</span>
+drush cr
+drush state:set system.maintenance_mode 0 <span class="nt">--input-format</span><span class="o">=</span>integer
+drush cr
+</code></pre></div></div> <hr> <h2 id="key-takeaways">Key Takeaways</h2> <ol> <li> <strong>Modern Drupal major upgrades are incremental:</strong> Unlike the Drupal 7 → 9 migration, upgrading from Drupal 10 to 11 is an in-place Composer and database update operation that can be completed in a weekend.</li> <li> <strong>Bridge Drupal 10 and 11 in two stages:</strong> Switching removed core modules (<code class="language-plaintext highlighter-rouge">book</code>, <code class="language-plaintext highlighter-rouge">tour</code>) and upgrading contrib blockers while still on Drupal 10.6 isolates module-level quirks (like <code class="language-plaintext highlighter-rouge">field_validation_legacy</code> and <code class="language-plaintext highlighter-rouge">book_navigation</code>) from the core upgrade itself.</li> <li> <strong>You don’t have to rewrite a Bootstrap 4 theme just for jQuery 4:</strong> A tiny compatibility shim for <code class="language-plaintext highlighter-rouge">$.isArray</code>, <code class="language-plaintext highlighter-rouge">$.trim</code>, <code class="language-plaintext highlighter-rouge">$.camelCase</code>, and <code class="language-plaintext highlighter-rouge">$.fn.jquery</code> lets legacy Bootstrap 4 JavaScript run smoothly on Drupal 11.</li> <li> <strong>AI agents excel at upgrade pre-flight checks:</strong> Having an agent cross-reference custom code, <code class="language-plaintext highlighter-rouge">.info.yml</code> files, library definitions, and contrib upgrade paths upfront turned what is normally a tedious manual audit into a predictable checklist.</li> </ol> </div> </article> <br> <hr> <br> <h2 class="text-3xl font-semibold mb-4 mt-12">Enjoy Reading This Article?</h2> <p class="mb-2">Here are some more articles you might like to read next:</p> <ul class="list-disc pl-7 my-3 space-y-2 marker:text-[var(--global-theme-color)]"> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2024/AWS-Lightsail/">AWS Lightsail Java Server Setup Memo</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Using-Muse-as-a-Coding-Agent-From-a-VM-Clone-to-a-Merged-Pull-Request/">Using Muse as a Coding Agent: From a VM Clone to a Merged Pull Request</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/Exploring-Multi-Cloud-Deployments-Migrating-from-AWS-Lightsail-to-Oracle-Cloud-OCI/">Exploring Multi-Cloud Deployments: Migrating from AWS Lightsail to Oracle Cloud (OCI)</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2026/PiLambdaChart-Building-a-Serverless-IoT-Dashboard-with-Raspberry-Pi-and-AWS/">PiLambdaChart: Building a Serverless IoT Dashboard with Raspberry Pi and AWS</a> </li> <li class="leading-relaxed"> <a class="underline decoration-1 hover:text-[var(--global-hover-color)]" href="/blog/2024/Set-up-Jekyll-locally-on-Mac/">Set up Jekyll Locally on Mac</a> </li> </ul> </div> </div> <footer class="fixed-bottom" role="contentinfo"> <div class="container mt-0"> © Copyright 2026 Nobu . Powered by <a href="https://jekyllrb.com/" target="_blank" rel="external nofollow noopener">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" rel="external nofollow noopener" target="_blank">al-folio</a> theme. </div> </footer> <script>
+  window.alFolio = {
+    compatBootstrap: false
+  };
+</script> <script src="/assets/js/nav-toggle.js?v=141bd79a73ebc0f0b6ea58e440ae79fc"></script> <script defer src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/imagesloaded@5.0.0/imagesloaded.pkgd.min.js" integrity="sha256-htrLFfZJ6v5udOG+3kNLINIKh2gvoKqwEhHYfTTMICc=" crossorigin="anonymous"></script> <script defer src="/assets/js/masonry.js?v=e49affc7bd2646f6acdad1dbe02c2359" type="text/javascript"></script> <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script> <script src="/assets/al_math/js/mathjax-setup.js"></script> <script src="/assets/js/tooltips-setup.js?v=fe487e99db6c43751e6e7bdb2d6a0611"></script> <script src="/assets/js/no_defer.js?v=53b1b1a645525975c963ce8bf8bfefcf"></script> <script defer src="/assets/js/common.js?v=87baac90f765f2f3362dcf6aaf312a8a"></script> <script defer src="/assets/js/copy_code.js?v=c8a01c11a92744d44b093fc3bda915df" type="text/javascript"></script> <script defer src="/assets/js/jupyter_new_tab.js?v=896d254890d9b47f0281f63bfccf0dee"></script> <script async src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script> <script async src="https://badge.dimensions.ai/badge.js"></script> <script defer src="https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js" integrity="sha256-ZgMyDAIYDYGxbcpJcfUnYwNevG/xi9OHKaR/8GK+jWc=" crossorigin="anonymous"></script> <script defer src="/assets/al_img_tools/js/zoom.js"></script> <script defer src="/assets/js/progress-bar.js?v=499464c5c63ced6cf7ad62509f1e2610" type="text/javascript"></script> <script src="https://cdn.jsdelivr.net/npm/vanilla-back-to-top@7.2.1/dist/vanilla-back-to-top.min.js" integrity="sha256-uMJJ3EoTyfRBoTbR+lrfu1uRQ87RZG8AR3cVNuQVeFg=" crossorigin="anonymous"></script> <script>
+    addBackToTop();
+  </script> <script type="module" src="/assets/al_search/js/search/ninja-keys.min.js"></script> <ninja-keys hidebreadcrumbs noautoloadmdicons placeholder="Type to start searching"></ninja-keys> <script src="/assets/al_search/js/search-setup.js"></script> <script>
+// get the ninja-keys element
+const ninja = document.querySelector('ninja-keys');
+
+// add the home and posts menu items
+ninja.data = [{
+    id: "nav-about",
+    title: "about",
+    section: "Navigation",
+    handler: () => {
+      window.location.href = "/";
+    },
+  },{id: "nav-projects",
+          title: "projects",
+          description: "Open-source projects, cloud infrastructure, and IoT telemetry systems.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/projects/";
+          },
+        },{id: "nav-blog",
+          title: "blog",
+          description: "",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/blog/";
+          },
+        },{id: "post-upgrading-a-long-running-hobby-site-from-drupal-10-to-11",
+        
+          title: "Upgrading a Long-Running Hobby Site from Drupal 10 to 11",
+        
+        description: "A practical walkthrough of an in-place upgrade from Drupal 10.6 to 11.4 in two days—covering two-stage Composer preparation, Lando database updates, jQuery 4 compatibility with Bootstrap 4, and subtle contrib module breaking changes.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Upgrading-a-Long-Running-Hobby-Site-from-Drupal-10-to-11/";
+          
+        },
+      },{id: "post-using-muse-as-a-coding-agent-from-a-vm-clone-to-a-merged-pull-request",
+        
+          title: "Using Muse as a Coding Agent: From a VM Clone to a Merged...",
+        
+        description: "Evaluating Meta&#39;s Muse agent inside a standalone Linux VM: repository cloning, SSRF test workarounds, mobile UI adjustments, and secure GitHub App workflows.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Using-Muse-as-a-Coding-Agent-From-a-VM-Clone-to-a-Merged-Pull-Request/";
+          
+        },
+      },{id: "post-exploring-multi-cloud-deployments-migrating-from-aws-lightsail-to-oracle-cloud-oci",
+        
+          title: "Exploring Multi-Cloud Deployments: Migrating from AWS Lightsail to Oracle Cloud (OCI)",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Exploring-Multi-Cloud-Deployments-Migrating-from-AWS-Lightsail-to-Oracle-Cloud-OCI/";
+          
+        },
+      },{id: "post-building-and-publishing-c4002-python-a-24ghz-mmwave-radar-driver-for-raspberry-pi",
+        
+          title: "Building and Publishing c4002-python: A 24GHz mmWave Radar Driver for Raspberry Pi",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Building-and-Publishing-c4002-python-mmWave-Radar-Driver/";
+          
+        },
+      },{id: "post-pilambdachart-building-a-serverless-iot-dashboard-with-raspberry-pi-and-aws",
+        
+          title: "PiLambdaChart: Building a Serverless IoT Dashboard with Raspberry Pi and AWS",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/PiLambdaChart-Building-a-Serverless-IoT-Dashboard-with-Raspberry-Pi-and-AWS/";
+          
+        },
+      },{id: "post-setting-up-raspberry-pi-with-an-ultrasonic-sensor",
+        
+          title: "Setting up Raspberry Pi with an Ultrasonic Sensor",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Setting-Up-Pi-with-Ultrasonic-Sensor/";
+          
+        },
+      },{id: "post-using-an-ir-sensor-for-precise-distance-measurement-on-raspberry-pi",
+        
+          title: "Using an IR Sensor for Precise Distance Measurement on Raspberry Pi",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/using-ir-sensor-for-distance-measurement/";
+          
+        },
+      },{id: "post-deploying-the-java-chart-generator-to-aws-lambda-on-schedule",
+        
+          title: "Deploying The Java Chart Generator To Aws Lambda On Schedule",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Deploying-the-Java-Chart-Generator-to-AWS-Lambda-on-Schedule/";
+          
+        },
+      },{id: "post-migrating-to-serverless-raspberry-pi-to-dynamodb-plus-lambda-function-for-chart-generation",
+        
+          title: "Migrating To Serverless: Raspberry Pi To Dynamodb Plus Lambda Function For Chart Generation...",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Migrating-to-Serverless-Raspberry-Pi-to-DynamoDB-plus-Lambda-Function-for-Chart-Generation/";
+          
+        },
+      },{id: "post-securing-serverless-site-migrating-from-s3-hosting-to-amazon-cloudfront-https",
+        
+          title: "Securing Serverless Site   Migrating From S3 Hosting To Amazon Cloudfront Https",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Securing-Serverless-Site-Migrating-from-S3-Hosting-to-Amazon-CloudFront-HTTPS/";
+          
+        },
+      },{id: "post-aws-serverless-sump-chart",
+        
+          title: "Aws Serverless Sump Chart",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/AWS-Serverless-Sump-Chart/";
+          
+        },
+      },{id: "post-restricting-access-with-http-basic-authentication",
+        
+          title: "Restricting Access With Http Basic Authentication",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/Restricting-Access-with-HTTP-Basic-Authentication/";
+          
+        },
+      },{id: "post-vs-code-snippet-in-front-matter",
+        
+          title: "Vs Code Snippet In Front Matter",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/VS-Code-Snippet-In-Front-Matter/";
+          
+        },
+      },{id: "post-set-up-jekyll-locally-on-mac",
+        
+          title: "Set up Jekyll Locally on Mac",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/Set-up-Jekyll-locally-on-Mac/";
+          
+        },
+      },{id: "post-aws-lightsail-java-server-setup-memo",
+        
+          title: "AWS Lightsail Java Server Setup Memo",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/AWS-Lightsail/";
+          
+        },
+      },{id: "post-github-actions-for-jar-file-deployment",
+        
+          title: "GitHub Actions for Jar file deployment",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/GitHubActions/";
+          
+        },
+      },{id: "post-docker-nginx-demo",
+        
+          title: "Docker Nginx Demo",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2024/Docker-Nginx-Demo/";
+          
+        },
+      },{id: "post-java-21-gotcha-resolving-quot-cannot-find-symbol-method-getfirst-quot-in-intellij",
+        
+          title: "Java 21 Gotcha: Resolving &quot;cannot find symbol: method getFirst()&quot; in IntelliJ",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/My-Java-Memo/";
+          
+        },
+      },{id: "post-journal-memo-streamlit-prototyping-on-macos-and-the-homebrew-python-gotcha",
+        
+          title: "Journal Memo: Streamlit Prototyping on macOS and the Homebrew Python Gotcha",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/Installing-Streamlit-on-Mac/";
+          
+        },
+      },{id: "post-spring-boot-multiple-primary-keys-via-jpa",
+        
+          title: "Spring Boot: Multiple Primary Keys via JPA",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/Spring/";
+          
+        },
+      },{id: "post-running-a-spring-boot-jar-on-docker-with-amazon-corretto",
+        
+          title: "Running a Spring Boot JAR on Docker with Amazon Corretto",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2023/SpringBootJar/";
+          
+        },
+      },{id: "projects-pilambdachart",
+          title: 'PiLambdaChart',
+          description: "Serverless IoT telemetry platform ingesting Raspberry Pi sensor data into DynamoDB with scheduled AWS Lambda chart generation and S3/CloudFront hosting.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/PiLambdaChart/";
+            },},{id: "projects-c4002-python",
+          title: 'c4002-python',
+          description: "Python library and CLI monitor for the DFRobot C4002 24GHz mmWave radar sensor on Raspberry Pi.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/c4002-python/";
+            },},{id: "projects-marginalia",
+          title: 'marginalia',
+          description: "Private, self-hosted RSS reader web application in Java, designed for seamless access across desktop and mobile devices.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/marginalia/";
+            },},{id: "projects-sumpdata",
+          title: 'sumpdata',
+          description: "Showcase Java Spring Boot application that manages IoT device telemetry data via a clean REST API.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/sumpdata/";
+            },},{
+        id: 'social-github',
+        title: 'GitHub',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://github.com/nobudev7", "_blank");
+        },
+      },{
+        id: 'social-linkedin',
+        title: 'LinkedIn',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://www.linkedin.com/in/nobudev7", "_blank");
+        },
+      },{
+        id: 'social-rss',
+        title: 'RSS Feed',
+        section: 'Socials',
+        handler: () => {
+          window.open("/feed.xml", "_blank");
+        },
+      },{
+      id: 'light-theme',
+      title: 'Change theme to light',
+      description: 'Change the theme of the site to Light',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("light");
+      },
+    },
+    {
+      id: 'dark-theme',
+      title: 'Change theme to dark',
+      description: 'Change the theme of the site to Dark',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("dark");
+      },
+    },
+    {
+      id: 'system-theme',
+      title: 'Use system default theme',
+      description: 'Change the theme of the site to System Default',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("system");
+      },
+    },];
+
+</script> <script src="/assets/al_search/js/shortcut-key.js"></script> </body> </html>
